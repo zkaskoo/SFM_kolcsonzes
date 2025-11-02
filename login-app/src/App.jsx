@@ -9,7 +9,7 @@ function App() {
   const [isCreateAccount, setIsCreateAccount] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
@@ -18,14 +18,31 @@ function App() {
       return
     }
 
-    if (email && password.length >= 6) {
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Login failed')
+        return
+      }
+
+      // Login successful
       setIsLoggedIn(true)
-    } else {
-      setError('Invalid credentials. Password must be at least 6 characters.')
+    } catch (err) {
+      setError('Failed to connect to server')
+      console.error('Login error:', err)
     }
   }
 
-  const handleCreateAccount = (e) => {
+  const handleCreateAccount = async (e) => {
     e.preventDefault()
     setError('')
 
@@ -39,14 +56,31 @@ function App() {
       return
     }
 
-    // TODO: Send data to backend
-    console.log('Creating account:', { name, email, password })
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      })
 
-    // Switch to login page after successful account creation
-    setIsCreateAccount(false)
-    setName('')
-    setPassword('')
-    setError('')
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Registration failed')
+        return
+      }
+
+      // Switch to login page after successful account creation
+      setIsCreateAccount(false)
+      setName('')
+      setPassword('')
+      setError('')
+    } catch (err) {
+      setError('Failed to connect to server')
+      console.error('Registration error:', err)
+    }
   }
 
   const handleLogout = () => {
