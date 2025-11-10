@@ -5,12 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1")
 @CrossOrigin(origins = "http://localhost:5173")
 @AllArgsConstructor
 public class AppUserController {
@@ -19,6 +20,24 @@ public class AppUserController {
     private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @PostMapping("/register")
+    public ResponseEntity<String> registers(@RequestBody RegisterRequest request) {
+        try {
+            appUserService.register(request);
+            return ResponseEntity.ok("Sikeres regisztráció! Kérlek ellenőrizd az emailedet.");
+        } catch (ResponseStatusException e) {
+            // Ha a service dob ResponseStatusException-t, azt itt visszaadjuk
+            return ResponseEntity
+                    .status(e.getStatusCode())
+                    .body(e.getReason());
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Hiba történt a regisztráció során.");
+        }
+    }
+
+/*
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
@@ -45,6 +64,8 @@ public class AppUserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+
+ */
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {

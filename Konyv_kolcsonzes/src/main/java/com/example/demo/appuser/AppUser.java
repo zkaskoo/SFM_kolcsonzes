@@ -1,15 +1,14 @@
 package com.example.demo.appuser;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,14 +16,21 @@ import java.util.Collections;
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
+@Builder
 public class AppUser implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // automatikus növekvő ID
     private Long id;
     private String name;
+    private String username;
     @Column(unique = true)
     private String email;
     private String password;
+    private double money;
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Book> books = new ArrayList<>();
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -35,6 +41,8 @@ public class AppUser implements UserDetails {
     public String getUsername() {
         return email;
     }
+
+    public String getRealUsername() { return username;}
 
     @Override
     public boolean isAccountNonExpired() {
