@@ -28,4 +28,22 @@ public class FileReaderTemplate {
 
         return content.toString();
     }
+
+    public String readAuthFile() throws IOException {
+        StringBuilder content = new StringBuilder();
+
+        // A fájl a classpath-ban van: src/main/resources/email/SuccesRegister.html
+        ClassPathResource resource = new ClassPathResource("emailtemplate/AuthNumber.html");
+
+        try (InputStream inputStream = resource.getInputStream();
+             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                content.append(line).append(System.lineSeparator());
+            }
+        }
+
+        return content.toString();
+    }
 }

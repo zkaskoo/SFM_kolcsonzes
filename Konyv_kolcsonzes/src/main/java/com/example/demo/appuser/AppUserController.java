@@ -7,9 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/v1")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -21,7 +18,7 @@ public class AppUserController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registers(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
         try {
             appUserService.register(request);
             return ResponseEntity.ok("Sikeres regisztráció! Kérlek ellenőrizd az emailedet.");
@@ -68,37 +65,15 @@ public class AppUserController {
  */
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            var user = appUserRepository.findByEmail(request.getEmail());
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+        // Meghívjuk a service-t, ami ellenőrzi a jelszót és elküldi az auth kódot
+        boolean success = appUserService.authenticate(request);
 
-            if (user.isEmpty()) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Invalid email or password");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-            }
-
-            AppUser foundUser = user.get();
-
-            if (!passwordEncoder.matches(request.getPassword(), foundUser.getPassword())) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Invalid email or password");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Login successful");
-            response.put("user", Map.of(
-                "id", foundUser.getId(),
-                "name", foundUser.getName(),
-                "email", foundUser.getEmail()
-            ));
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Login failed: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        if (success) {
+            return ResponseEntity.ok("Authentication code sent to email. It is valid for 5 minutes.");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
         }
     }
+
 }

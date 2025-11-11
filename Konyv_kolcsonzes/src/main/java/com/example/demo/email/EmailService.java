@@ -32,7 +32,24 @@ public class EmailService {
             helper.setText(email, true);
             helper.setTo(to);
             helper.setSubject("Sikeres Regisztráció");
-            helper.setFrom("molgabor10@gmail.com");
+            helper.setFrom("gal.roland022@gmail.com");
+            mailSender.send(mimeMessage);
+
+        }catch (MessagingException e){
+            LOGGER.error("failed to send email", e);
+            throw new IllegalStateException("failed to send email");
+        }
+    }
+
+    public void sendAuthNumberEmail(String to, String email){
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(mimeMessage, "utf-8");
+            helper.setText(email, true);
+            helper.setTo(to);
+            helper.setSubject("Hitelesítő kód");
+            helper.setFrom("gal.roland022@gmail.com");
             mailSender.send(mimeMessage);
 
         }catch (MessagingException e){
