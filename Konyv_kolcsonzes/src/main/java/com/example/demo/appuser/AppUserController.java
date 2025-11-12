@@ -7,6 +7,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -18,21 +21,21 @@ public class AppUserController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequest request) {
         try {
             appUserService.register(request);
-            return ResponseEntity.ok("Sikeres regisztráció! Kérlek ellenőrizd az emailedet.");
+            return ResponseEntity.ok(Map.of("message", "Sikeres regisztráció! Kérlek ellenőrizd az emailedet."));
         } catch (ResponseStatusException e) {
-            // Ha a service dob ResponseStatusException-t, azt itt visszaadjuk
             return ResponseEntity
                     .status(e.getStatusCode())
-                    .body(e.getReason());
+                    .body(Map.of("status", String.valueOf(e.getStatusCode().value()), "message", e.getReason()));
         } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Hiba történt a regisztráció során.");
+                    .body(Map.of("message", "Hiba történt a regisztráció során."));
         }
     }
+
 
 /*
     @PostMapping("/register")
@@ -65,15 +68,18 @@ public class AppUserController {
  */
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        // Meghívjuk a service-t, ami ellenőrzi a jelszót és elküldi az auth kódot
+    public ResponseEntity<Map<String,String>> login(@RequestBody LoginRequest request) {
         boolean success = appUserService.authenticate(request);
 
-        if (success) {
-            return ResponseEntity.ok("Authentication code sent to email. It is valid for 5 minutes.");
+        Map<String,String> response = new HashMap<>();
+        if (success){
+            response.put("message", "Authentication code sent to email. It is valid for 5 minutes.");
+            return ResponseEntity.ok(response); // JSON objektum
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
+            response.put("message", "Invalid email or password.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
+
 
 }

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -101,12 +102,17 @@ public class AppUserService implements UserDetailsService {
     }
 
     public boolean authenticate(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException e) {
+            // Hibakezelés: visszaadjuk a frontendre
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hibás email vagy jelszó");
+        }
 
         emailService.sendAuthNumberEmail(request.getEmail(),buildConfirmationEmail2(secondAuthService.generateAuthNumber(request.getEmail())));
 
