@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// src/App.jsx – TELJES, VÉGLEGES VERZIÓ (2025. november)
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 
 function App() {
@@ -8,102 +9,100 @@ function App() {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCreateAccount, setIsCreateAccount] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // <-- ide kell
+  // 2FA
   const [jwtToken, setJwtToken] = useState('');
   const [show2FA, setShow2FA] = useState(false);
   const [authCode, setAuthCode] = useState('');
 
+  // Jelszó javaslat – csak egy!
+  const [showSuggestion, setShowSuggestion] = useState(false);
+  const [suggestedPassword, setSuggestedPassword] = useState('');
+  const [loadingPassword, setLoadingPassword] = useState(false);
+
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Login handler
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // URL alapján nézetváltás
+  useEffect(() => {
+    if (location.pathname === '/register') {
+      setIsCreateAccount(true);
+      setIsForgotPassword(false);
+    } else if (location.pathname === '/forgot-password') {
+      setIsForgotPassword(true);
+      setIsCreateAccount(false);
+    } else {
+      setIsCreateAccount(false);
+      setIsForgotPassword(false);
+    }
     setError('');
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
+    setSuccessMessage('');
+    setShowSuggestion(false);
+    setSuggestedPassword('');
+  }, [location.pathname]);
+
+  // Jelszó generálás (csak egy darab!)
+  const generatePassword = async () => {
+    if (loadingPassword) return;
+    setLoadingPassword(true);
+    setError('');
 
     try {
-      const response = await fetch('http://localhost:8080/api/v1/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await fetch('http://localhost:8080/api/v1/password/generate');
+      if (!res.ok) throw new Error('Szerver hiba');
 
-      const data = await response.json();
+      const data = await res.text();
+      const pwd = typeof data === 'string' ? data.trim() : data.password || data;
 
-      if (!response.ok) {
-        setError(data.message || 'Login failed');
-        return;
+      if (pwd && pwd.length >= 8) {
+        setSuggestedPassword(pwd);
       }
-
-      // 🔹 Ha az email/jelszó helyes → megjelenik a 2FA panel
-      setShow2FA(true);
     } catch (err) {
-      setError('Failed to connect to server');
-      console.error('Login error:', err);
+      setError('Nem sikerült jelszót generálni');
+      console.error(err);
+    } finally {
+      setLoadingPassword(false);
     }
   };
 
-  // 🔹 2FA VERIFY HANDLER
-  const handleVerify = async () => {
-    if (!authCode) {
-      setError('Please enter the authentication code');
-      return;
-    }
-  
-    try {
-      const res = await fetch('http://localhost:8080/api/v1/auth/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: authCode, email }),
-      });
-  
-      // Mindig próbáljuk JSON-ként olvasni
-      const data = await res.json();
-  
-      if (!res.ok) {
-        setError(data?.message || 'Verification failed');
-        return;
-      }
-  
-      // Sikeres 2FA → át a MainSite.jsx-re
-      setJwtToken(data.token);
-      setIsLoggedIn(true);
-      setShow2FA(false);
-      setError('');
-    } catch (err) {
-      setError('Verification error: ' + err.message);
-      console.error('Verification error:', err);
+  // Javaslat elfogadása → kitölti mindkét mezőt és eltünteti a dobozt
+  const useSuggestedPassword = () => {
+    setPassword(suggestedPassword);
+    setConfirmPassword(suggestedPassword);
+    setShowSuggestion(false);
+  };
+
+  // Fókusz → megjelenik a javaslat
+  const handlePasswordFocus = () => {
+    setShowSuggestion(true);
+    if (!suggestedPassword) {
+      generatePassword();
     }
   };
-  
-  
 
-  // Registration handler
+  // ====================== REGISZTRÁCIÓ ======================
   const handleCreateAccount = async (e) => {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
 
     if (!name || !username || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields');
+      setError('Kérlek töltsd ki az összes mezőt');
       return;
     }
-
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('A jelszónak legalább 6 karakternek kell lennie');
       return;
     }
-
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('A jelszavak nem egyeznek');
       return;
     }
 
@@ -115,156 +114,287 @@ function App() {
       });
 
       let data;
-      try {
-        data = await response.json();
-      } catch {
-        data = await response.text();
-      }
+      try { data = await response.json(); } catch { data = await response.text(); }
 
       if (!response.ok) {
-        setError(data.message || data || 'Registration failed');
+        setError(data.message || data || 'Regisztráció sikertelen');
         return;
       }
 
-      setSuccessMessage(typeof data === 'string' ? data : data.message || 'Sikeres regisztráció!');
+      setSuccessMessage('Sikeres regisztráció! Most már bejelentkezhetsz.');
       setTimeout(() => {
-        setIsCreateAccount(false);
         setSuccessMessage('');
+        navigate('/login');
+        setName(''); setUsername(''); setEmail(''); setPassword(''); setConfirmPassword('');
       }, 3000);
-
-      setName('');
-      setUsername('');
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setError('');
     } catch (err) {
-      setError('Failed to connect to server');
-      console.error('Registration error:', err);
+      setError('Nem sikerült csatlakozni a szerverhez');
+    }
+  };
+
+  // ====================== BEJELENTKEZÉS ======================
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!email || !password) {
+      setError('Kérlek töltsd ki az összes mezőt');
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || 'Hibás email vagy jelszó');
+        return;
+      }
+      setShow2FA(true);
+    } catch (err) {
+      setError('Nem sikerült csatlakozni a szerverhez');
+    }
+  };
+
+  // ====================== 2FA ======================
+  const handleVerify = async () => {
+    if (!authCode || authCode.length !== 6) {
+      setError('Kérem adja meg a 6 jegyű kódot');
+      return;
+    }
+    try {
+      const res = await fetch('http://localhost:8080/api/v1/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: authCode, email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.message || 'Érvénytelen vagy lejárt kód');
+        return;
+      }
+      setJwtToken(data.token);
+      setIsLoggedIn(true);
+      setShow2FA(false);
+      setError('');
+      setAuthCode('');
+    } catch (err) {
+      setError('Hiba az ellenőrzés során');
+    }
+  };
+
+  // ====================== ELFELEJTETT JELSZÓ ======================
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('Küldés folyamatban...');
+    if (!email) {
+      setError('Kérem adja meg az emailjét');
+      setSuccessMessage('');
+      return;
+    }
+    try {
+      const res = await fetch('http://localhost:8080/api/v1/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccessMessage('Ellenőrizze az email fiókját! Elküldtük a visszaállítási linket.');
+      } else {
+        setError(data.message || 'Hiba történt');
+        setSuccessMessage('');
+      }
+    } catch (err) {
+      setError('Nem sikerült csatlakozni a szerverhez');
+      setSuccessMessage('');
     }
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setEmail('');
-    setPassword('');
-    setName('');
-    setError('');
+    setEmail(''); setPassword(''); setJwtToken(''); setError('');
+    navigate('/');
   };
 
-  // Logged in view
+  const goToMain = (e) => { e.preventDefault(); navigate('/'); };
+
+  // ==================================================================
+  //                              RENDER
+  // ==================================================================
+
   if (isLoggedIn) {
     return (
       <div className="app">
         <div className="welcome-container">
-          <h1>Welcome!</h1>
-          <p>You are successfully logged in as: <strong>{email}</strong></p>
-          <button onClick={handleLogout} className="logout-btn">Logout</button>
+          <h1>Üdvözöllek!</h1>
+          <p>Sikeresen bejelentkeztél: <strong>{email}</strong></p>
+          <button onClick={handleLogout} className="logout-btn">Kijelentkezés</button>
         </div>
       </div>
     );
   }
 
-  // Registration view
+  if (isForgotPassword) {
+    return (
+      <div className="app">
+        <div className="login-container">
+          <div className="login-header">
+            <h1>Jelszó helyreállítása</h1>
+            <p>Írd be az emailed, és küldünk egy visszaállítási linket</p>
+          </div>
+          <form onSubmit={handleForgotPassword} className="login-form">
+            <div className="form-group">
+              <label>Email címed</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@pelda.hu" className="form-input" autoFocus />
+            </div>
+            {error && <div className="error-message">{error}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>}
+            <button type="submit" className="login-btn">Link küldése</button>
+          </form>
+          <div className="login-footer">
+            <a href="/" onClick={goToMain} className="footer-link">Vissza a főoldalra</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ====================== REGISZTRÁCIÓ – KICSI, EGYSZERŰ JAVASLAT ======================
   if (isCreateAccount) {
     return (
       <div className="app">
         <div className="login-container">
           <div className="login-header">
-            <h1>Create Account</h1>
-            <p>Join us today</p>
+            <h1>Regisztráció</h1>
+            <p>Hozzon létre új fiókot</p>
           </div>
-
-          {successMessage && (
-            <div className="success-message">{successMessage}</div>
-          )}
+          {successMessage && <div className="success-message">{successMessage}</div>}
 
           <form onSubmit={handleCreateAccount} className="login-form">
             <div className="form-group">
-              <label htmlFor="name">Name</label>
-              <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your name" className="form-input" />
+              <label>Név</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Teljes neve" className="form-input" />
+            </div>
+            <div className="form-group">
+              <label>Felhasználónév</label>
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Válasszon felhasználónevet" className="form-input" />
+            </div>
+            <div className="form-group">
+              <label>Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@pelda.hu" className="form-input" />
+            </div>
+
+            {/* JELSZÓ + KICSI, LETISZTULT JAVASLAT */}
+            <div className="form-group">
+              <label>Jelszó</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onFocus={handlePasswordFocus}
+                placeholder="Minimum 8 karakter"
+                className="form-input"
+              />
+
+              {showSuggestion && (
+                <div className="password-suggestion-compact">
+                  <div className="suggestion-header">
+                    <span>Jelszó javaslat (Jegyezze fel mindenképpen!)</span>
+                    <button
+                      type="button"
+                      onClick={generatePassword}
+                      disabled={loadingPassword}
+                      className="refresh-btn-small"
+                      title="Új jelszó generálása"
+                    >
+                      {loadingPassword ? '⋯' : 'Új'}
+                    </button>
+                  </div>
+
+                  {suggestedPassword ? (
+                    <div className="suggested-password-line" onClick={useSuggestedPassword}>
+                      <code>{suggestedPassword}</code>
+                    </div>
+                  ) : (
+                    <div className="loading-small">Generálás...</div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="username">Username</label>
-              <input type="text" id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter your username" className="form-input" />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" className="form-input" />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" className="form-input" />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm your password" className="form-input" />
+              <label>Jelszó megerősítése</label>
+              <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Írja be újra" className="form-input" />
             </div>
 
             {error && <div className="error-message">{error}</div>}
-
-            <button type="submit" className="login-btn">Create Account</button>
+            <button type="submit" className="login-btn">Fiók létrehozása</button>
           </form>
 
           <div className="login-footer">
-            <a href="#" onClick={(e) => { e.preventDefault(); setIsCreateAccount(false); setError(''); }} className="footer-link">
-              Already have an account? Login
-            </a>
+            <a href="/" onClick={goToMain} className="footer-link">Vissza a főoldalra</a>
           </div>
         </div>
       </div>
     );
   }
 
-  // Login view
+  // ====================== BEJELENTKEZÉS ======================
   return (
     <div className="app">
       <div className="login-container">
         <div className="login-header">
-          <h1>Welcome Back</h1>
-          <p>Please login to your account</p>
+          <h1>Üdvözöljük újra!</h1>
+          <p>Jelentkezzen be a fiókjába</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" className="form-input" />
+            <label>Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@pelda.hu" className="form-input" autoFocus />
           </div>
-
           <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" className="form-input" />
+            <label>Jelszó</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Adja meg a jelszavát" className="form-input" />
           </div>
-
           {error && <div className="error-message">{error}</div>}
-
-          <button type="submit" className="login-btn">Login</button>
+          <button type="submit" className="login-btn">Bejelentkezés</button>
         </form>
 
         <div className="login-footer">
-          <a href="#" className="footer-link">Forgot password?</a>
+          <a href="/forgot-password" onClick={(e) => { e.preventDefault(); navigate('/forgot-password'); }} className="footer-link">
+            Elfelejtette a jelszavát?
+          </a>
           <span className="footer-divider">•</span>
-          <a href="#" onClick={(e) => { e.preventDefault(); setIsCreateAccount(true); setError(''); }} className="footer-link">Create account</a>
+          <a href="/" onClick={goToMain} className="footer-link">Vissza a főoldalra</a>
         </div>
       </div>
 
-      {/* 🔹 2FA PANEL */}
+                  {/* 2FA MODAL – MÉGSE GOMB IS SZÉP LILA! */}
       {show2FA && (
-        <div className="overlay">
-          <div className="twofa-panel">
-            <h2>Two-Factor Authentication</h2>
-            <p>Enter the code sent to your email:</p>
+        <div className="overlay" onClick={() => setShow2FA(false)}>
+          <div className="twofa-panel" onClick={(e) => e.stopPropagation()}>
+            <h2>Kétlépcsős hitelesítés</h2>
+            <p>Írd be az emailben kapott 6 jegyű kódot:</p>
             <input
               type="text"
-              placeholder="Enter verification code"
+              placeholder="123456"
               value={authCode}
-              onChange={(e) => setAuthCode(e.target.value)}
+              onChange={(e) => setAuthCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              maxLength="6"
+              autoFocus
             />
-            <button onClick={handleVerify}>Verify</button>
+            <div className="twofa-buttons">
+              <button onClick={handleVerify} className="verify-btn">
+                Ellenőrzés
+              </button>
+              <button onClick={() => setShow2FA(false)} className="verify-btn cancel">
+                Mégse
+              </button>
+            </div>
             {error && <div className="error-message">{error}</div>}
           </div>
         </div>
