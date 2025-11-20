@@ -57,4 +57,21 @@ public class EmailService {
             throw new IllegalStateException("failed to send email");
         }
     }
+
+    public void sendForgottenEmail(String email, String to){
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(mimeMessage, "utf-8");
+            helper.setText(email, true);
+            helper.setTo(to);
+            helper.setSubject("Elfelejtett jelszó");
+            helper.setFrom("gal.roland022@gmail.com");
+            mailSender.send(mimeMessage);
+
+        }catch (MessagingException e){
+            LOGGER.error("failed to send email", e);
+            throw new IllegalStateException("failed to send email");
+        }
+    }
 }
