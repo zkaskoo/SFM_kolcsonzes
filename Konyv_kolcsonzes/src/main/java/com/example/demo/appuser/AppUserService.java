@@ -2,6 +2,7 @@ package com.example.demo.appuser;
 
 import com.example.demo.email.EmailService;
 import com.example.demo.email.FileReaderTemplate;
+import com.example.demo.password.ValidPasswordCheck;
 import com.example.demo.secondauth.SecondAuthService;
 import com.example.demo.security.config.JwtService;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ public class AppUserService implements UserDetailsService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final SecondAuthService secondAuthService;
+    private final ValidPasswordCheck validPasswordCheck;
 
 
     @Override
@@ -59,6 +61,10 @@ public class AppUserService implements UserDetailsService {
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A jelszavak nem egyeznek!");
+        }
+
+        if (!validPasswordCheck.StrongPassword(request.getPassword())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A jelszónak legalább 8 karakter hosszúnak kell lennie, tartalmaznia kell kis- és nagybetűt, valamint számot.");
         }
 
         var user = AppUser.builder()
