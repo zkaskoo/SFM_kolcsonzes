@@ -7,6 +7,7 @@ import com.example.demo.email.FileReaderTemplate;
 import com.example.demo.password.ValidPasswordCheck;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,6 +25,7 @@ public class ForgottenPasswordService {
     private final FileReaderTemplate fileReaderTemplate;
     private final EmailService emailService;
     private final ValidPasswordCheck validPasswordCheck;
+    private final PasswordEncoder passwordEncoder;
 
 
     public boolean generateResetToken(String email){
@@ -80,26 +82,35 @@ public class ForgottenPasswordService {
 
         return forgottenPassword.getUserEmail();
     }
-    /*
 
-    public boolean isChangePassword(String email, String password,String confirmPassword){
+
+    public boolean isChangePassword(String email, String password, String confirmPassword) {
         Optional<AppUser> optional = appUserRepository.findByEmail(email);
 
-        if (!validPasswordCheck.StrongPassword(password)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A jelszónak legalább 8 karakter hosszúnak kell lennie, és tartalmaznia kell kisbetűt, nagybetűt, valamint számot.");
-        }
-
-        if (!password.equals(confirmPassword)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem egyeznek a jelszavak");
+        if (optional.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem található felhasználó ezzel az email címmel");
         }
 
         AppUser appUser = optional.get();
 
-        if (appUser.getPassword().equals(password)){
+        if (!validPasswordCheck.StrongPassword(password)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A jelszónak legalább 8 karakter hosszúnak kell lennie, és tartalmaznia kell kisbetűt, nagybetűt, valamint számot.");
+        }
+
+        if (!password.equals(confirmPassword)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem egyeznek a jelszavak");
+        }
+
+        // Ha jelszavak hash-elve vannak:
+        if (passwordEncoder.matches(password, appUser.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Az új jelszó nem egyezhet meg a régi jelszóval");
         }
 
-        appUser.setPassword();
+        appUser.setPassword(passwordEncoder.encode(password));
+        appUserRepository.save(appUser);
+
+        return true;
     }
-     */
+
+
 }
