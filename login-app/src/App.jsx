@@ -159,10 +159,6 @@ function App() {
 
   // ====================== 2FA ======================
   const handleVerify = async () => {
-    if (!authCode || authCode.length !== 6) {
-      setError('Kérem adja meg a 6 jegyű kódot');
-      return;
-    }
     try {
       const res = await fetch('http://localhost:8080/api/v1/auth/verify', {
         method: 'POST',

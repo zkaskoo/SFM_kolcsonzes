@@ -1,8 +1,10 @@
 package com.example.demo.forgrottenpassword;
 
+import com.example.demo.appuser.AppUser;
 import com.example.demo.appuser.AppUserRepository;
 import com.example.demo.email.EmailService;
 import com.example.demo.email.FileReaderTemplate;
+import com.example.demo.password.ValidPasswordCheck;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,8 @@ public class ForgottenPasswordService {
     private final AppUserRepository appUserRepository;
     private final FileReaderTemplate fileReaderTemplate;
     private final EmailService emailService;
+    private final ValidPasswordCheck validPasswordCheck;
+
 
     public boolean generateResetToken(String email){
         System.out.println("A kapott email a függvényben: " + email);
@@ -61,24 +65,41 @@ public class ForgottenPasswordService {
 
     }
 
-    public boolean isValidResetToken(String token) {
+    public String validResetToken(String token) {
         Optional<ForgottenPassword> optional = forgottenPasswordRepository.findByResetToken(token);
 
         if (optional.isEmpty()) {
-            return false;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hibás vagy lejárt token");
         }
 
         ForgottenPassword forgottenPassword = optional.get();
 
         if (forgottenPassword.getResetTokenExpiryDate().isBefore(LocalDateTime.now())) {
-            return false;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hibás vagy lejárt token");
         }
 
-        return true;
+        return forgottenPassword.getUserEmail();
     }
-
     /*
-    public boolean isChangePassword(){
 
-    }*/
+    public boolean isChangePassword(String email, String password,String confirmPassword){
+        Optional<AppUser> optional = appUserRepository.findByEmail(email);
+
+        if (!validPasswordCheck.StrongPassword(password)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A jelszónak legalább 8 karakter hosszúnak kell lennie, és tartalmaznia kell kisbetűt, nagybetűt, valamint számot.");
+        }
+
+        if (!password.equals(confirmPassword)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem egyeznek a jelszavak");
+        }
+
+        AppUser appUser = optional.get();
+
+        if (appUser.getPassword().equals(password)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Az új jelszó nem egyezhet meg a régi jelszóval");
+        }
+
+        appUser.setPassword();
+    }
+     */
 }

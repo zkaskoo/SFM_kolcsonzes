@@ -22,7 +22,7 @@ public class ForgottenPasswordController {
     }
 
     @PostMapping("/validate")
-    public boolean validateResetToken(@RequestBody TokenRequest request) {
-        return forgottenPasswordService.isValidResetToken(request.getToken());
+    public String validateResetToken(@RequestBody TokenRequest request) {
+        return forgottenPasswordService.validResetToken(request.getToken());
     }
 }
