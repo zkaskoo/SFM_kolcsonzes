@@ -93,19 +93,6 @@ function App() {
     setError('');
     setSuccessMessage('');
 
-    if (!name || !username || !email || !password || !confirmPassword) {
-      setError('Kérlek töltsd ki az összes mezőt');
-      return;
-    }
-    if (password.length < 6) {
-      setError('A jelszónak legalább 6 karakternek kell lennie');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('A jelszavak nem egyeznek');
-      return;
-    }
-
     try {
       const response = await fetch('http://localhost:8080/api/v1/register', {
         method: 'POST',
