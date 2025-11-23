@@ -220,31 +220,6 @@ function App() {
     );
   }
 
-  if (isForgotPassword) {
-    return (
-      <div className="app">
-        <div className="login-container">
-          <div className="login-header">
-            <h1>Jelszó helyreállítása</h1>
-            <p>Írd be az emailed, és küldünk egy visszaállítási linket</p>
-          </div>
-          <form onSubmit={handleForgotPassword} className="login-form">
-            <div className="form-group">
-              <label>Email címed</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@pelda.hu" className="form-input" autoFocus />
-            </div>
-            {error && <div className="error-message">{error}</div>}
-            {successMessage && <div className="success-message">{successMessage}</div>}
-            <button type="submit" className="login-btn">Link küldése</button>
-          </form>
-          <div className="login-footer">
-            <a href="/" onClick={goToMain} className="footer-link">Vissza a főoldalra</a>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // ====================== REGISZTRÁCIÓ – KICSI, EGYSZERŰ JAVASLAT ======================
   if (isCreateAccount) {
     return (
@@ -348,8 +323,8 @@ function App() {
         </form>
 
         <div className="login-footer">
-          <a href="/forgot-password" onClick={(e) => { e.preventDefault(); navigate('/forgot-password'); }} className="footer-link">
-            Elfelejtette a jelszavát?
+          <a href="/forgotten-password" onClick={(e) => { e.preventDefault(); navigate('/forgotten-password'); }} className="footer-link">
+              Elfelejtette a jelszavát?
           </a>
           <span className="footer-divider">•</span>
           <a href="/" onClick={goToMain} className="footer-link">Vissza a főoldalra</a>

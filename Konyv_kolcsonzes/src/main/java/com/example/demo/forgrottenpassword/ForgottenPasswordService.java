@@ -46,7 +46,7 @@ public class ForgottenPasswordService {
         forgottenPassword.setResetTokenExpiryDate(LocalDateTime.now().plusMinutes(15));
         forgottenPasswordRepository.save(forgottenPassword);
 
-        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+        String resetLink = "http://localhost:5173/reset-password?token=" + token;
         String forgottenHtml = buildConfirmationEmail3(user.getName(), resetLink);
 
 
