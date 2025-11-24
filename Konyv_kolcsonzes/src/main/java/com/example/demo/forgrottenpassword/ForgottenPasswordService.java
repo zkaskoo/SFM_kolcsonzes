@@ -1,10 +1,13 @@
 package com.example.demo.forgrottenpassword;
 
+import com.example.demo.appuser.AppUser;
 import com.example.demo.appuser.AppUserRepository;
 import com.example.demo.email.EmailService;
 import com.example.demo.email.FileReaderTemplate;
+import com.example.demo.password.ValidPasswordCheck;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,6 +24,9 @@ public class ForgottenPasswordService {
     private final AppUserRepository appUserRepository;
     private final FileReaderTemplate fileReaderTemplate;
     private final EmailService emailService;
+    private final ValidPasswordCheck validPasswordCheck;
+    private final PasswordEncoder passwordEncoder;
+
 
     public boolean generateResetToken(String email){
         System.out.println("A kapott email a függvényben: " + email);
@@ -40,7 +46,7 @@ public class ForgottenPasswordService {
         forgottenPassword.setResetTokenExpiryDate(LocalDateTime.now().plusMinutes(15));
         forgottenPasswordRepository.save(forgottenPassword);
 
-        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+        String resetLink = "http://localhost:5173/reset-password?token=" + token;
         String forgottenHtml = buildConfirmationEmail3(user.getName(), resetLink);
 
 
@@ -61,24 +67,50 @@ public class ForgottenPasswordService {
 
     }
 
-    public boolean isValidResetToken(String token) {
+    public String validResetToken(String token) {
         Optional<ForgottenPassword> optional = forgottenPasswordRepository.findByResetToken(token);
 
         if (optional.isEmpty()) {
-            return false;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hibás vagy lejárt token");
         }
 
         ForgottenPassword forgottenPassword = optional.get();
 
         if (forgottenPassword.getResetTokenExpiryDate().isBefore(LocalDateTime.now())) {
-            return false;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hibás vagy lejárt token");
         }
+
+        return forgottenPassword.getUserEmail();
+    }
+
+
+    public boolean isChangePassword(String email, String password, String confirmPassword) {
+        Optional<AppUser> optional = appUserRepository.findByEmail(email);
+
+        if (optional.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem található felhasználó ezzel az email címmel");
+        }
+
+        AppUser appUser = optional.get();
+
+        if (!validPasswordCheck.StrongPassword(password)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A jelszónak legalább 8 karakter hosszúnak kell lennie, és tartalmaznia kell kisbetűt, nagybetűt, valamint számot.");
+        }
+
+        if (!password.equals(confirmPassword)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem egyeznek a jelszavak");
+        }
+
+        // Ha jelszavak hash-elve vannak:
+        if (passwordEncoder.matches(password, appUser.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Az új jelszó nem egyezhet meg a régi jelszóval");
+        }
+
+        appUser.setPassword(passwordEncoder.encode(password));
+        appUserRepository.save(appUser);
 
         return true;
     }
 
-    /*
-    public boolean isChangePassword(){
 
-    }*/
 }

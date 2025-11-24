@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "reset-token")
+@Table(name = "resettoken")
 public class ForgottenPassword {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
