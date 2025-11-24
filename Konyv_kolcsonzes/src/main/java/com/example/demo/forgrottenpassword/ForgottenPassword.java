@@ -20,5 +20,5 @@ public class ForgottenPassword {
     private Long id;
     private String resetToken;
     private LocalDateTime resetTokenExpiryDate;
-    private String userEmail;
+    private String email;
 }

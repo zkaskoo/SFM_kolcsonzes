@@ -41,7 +41,7 @@ public class ForgottenPasswordService {
 
         String token = UUID.randomUUID().toString();
         ForgottenPassword forgottenPassword = new ForgottenPassword();
-        forgottenPassword.setUserEmail(user.getEmail());
+        forgottenPassword.setEmail(user.getEmail());
         forgottenPassword.setResetToken(token);
         forgottenPassword.setResetTokenExpiryDate(LocalDateTime.now().plusMinutes(15));
         forgottenPasswordRepository.save(forgottenPassword);
@@ -80,7 +80,7 @@ public class ForgottenPasswordService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hibás vagy lejárt token");
         }
 
-        return forgottenPassword.getUserEmail();
+        return forgottenPassword.getEmail();
     }
 
 
@@ -106,6 +106,8 @@ public class ForgottenPasswordService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Az új jelszó nem egyezhet meg a régi jelszóval");
         }
 
+
+        forgottenPasswordRepository.deleteByEmail(email);
         appUser.setPassword(passwordEncoder.encode(password));
         appUserRepository.save(appUser);
 

@@ -76,6 +76,8 @@ public class SecondAuthService {
         return LoginResponse.builder()
                 .token(jwtToken)
                 .username(user.getRealUsername())
+                .name(user.getName())
+                .money(user.getMoney())
                 .build();
     }
 }
