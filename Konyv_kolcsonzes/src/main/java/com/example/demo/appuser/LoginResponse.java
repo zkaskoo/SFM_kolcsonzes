@@ -13,4 +13,5 @@ public class LoginResponse {
     private String username;
     private String name;
     private double money;
+    private String email;
 }

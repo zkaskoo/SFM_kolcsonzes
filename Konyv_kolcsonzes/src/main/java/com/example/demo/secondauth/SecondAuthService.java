@@ -78,6 +78,7 @@ public class SecondAuthService {
                 .username(user.getRealUsername())
                 .name(user.getName())
                 .money(user.getMoney())
+                .email(user.getEmail())
                 .build();
     }
 }
