@@ -51,6 +51,38 @@ public class BookController {
         }
     }
 
+    @GetMapping("/cover/{bookId}")
+    public ResponseEntity<byte[]> getBookCover(@PathVariable Long bookId) {
+
+        Book book = bookRepository.findById(bookId).orElse(null);
+
+        if (book == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        byte[] picture = book.getPicture();
+
+        if (picture == null || picture.length == 0) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // MIME típus felismerés (PNG vagy JPG)
+        String contentType = "image/jpeg";
+        if (picture.length >= 4) {
+            if ((picture[0] & 0xFF) == 0x89 &&
+                    picture[1] == 'P' &&
+                    picture[2] == 'N' &&
+                    picture[3] == 'G') {
+                contentType = "image/png";
+            }
+        }
+
+        return ResponseEntity.ok()
+                .header("Content-Type", contentType)
+                .header("Cache-Control", "public, max-age=31536000")
+                .body(picture);
+    }
+
     @PostMapping("/privatebooks")
     public ResponseEntity<List<Book>> getPrivateBooks(@RequestBody MyBookRequest request) {
         List<Book> books = bookService.myPrivateBooks(request.getUserId());
@@ -93,7 +125,7 @@ public class BookController {
     public ResponseEntity<Void> makeBookPublic(@RequestBody ChangeBookRequest request) {
 
         Long bookId = request.getBookId();
-
+        System.out.println(bookId);
         try {
             // Hívja a Service metódust, ami isPrivate=FALSE-ra állít
             bookService.changeMyPrivateBookToPublicBook(bookId);

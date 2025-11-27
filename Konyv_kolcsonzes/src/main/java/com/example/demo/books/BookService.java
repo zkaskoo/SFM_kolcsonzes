@@ -42,7 +42,7 @@ public class BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("A könyv nem található, ID: " + bookId));
 
-        book.setPrivate(true);
+        book.setPrivate(false);
 
         bookRepository.save(book);
     }
@@ -54,7 +54,7 @@ public class BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("A könyv nem található, ID: " + bookId));
 
-        book.setPrivate(false);
+        book.setPrivate(true);
 
         bookRepository.save(book);
     }
