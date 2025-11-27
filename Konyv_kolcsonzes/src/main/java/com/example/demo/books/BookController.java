@@ -51,10 +51,60 @@ public class BookController {
         }
     }
 
-    @PostMapping("/my-books")
-    public ResponseEntity<List<Book>> getMyBooks(@RequestBody MyBookRequest request) {
-        List<Book> books = bookService.myBooks(request.getUserId());
+    @PostMapping("/privatebooks")
+    public ResponseEntity<List<Book>> getPrivateBooks(@RequestBody MyBookRequest request) {
+        List<Book> books = bookService.myPrivateBooks(request.getUserId());
+        if (books.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(books);
+    }
+
+    @PostMapping("/publicbooks")
+    public ResponseEntity<List<Book>> getPublicBooks(@RequestBody MyBookRequest request) {
+        List<Book> books = bookService.myPublicBooks(request.getUserId());
+        if (books.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(books);
+    }
+
+    @PostMapping("/changeprivate")
+    public ResponseEntity<Void> makeBookPrivate(@RequestBody ChangeBookRequest request) {
+
+        Long bookId = request.getBookId();
+
+        try {
+            // Hívja a Service metódust, ami isPrivate=TRUE-ra állít
+            bookService.changeMyPublicBookToPrivateBook(bookId);
+
+            // Sikeres módosítás: 204 No Content
+            return ResponseEntity.noContent().build();
+
+        } catch (BookNotFoundException e) {
+            // Könyv nem található: 404 Not Found (Ezt az @ResponseStatus kezeli)
+            throw e;
+        }
+    }
+
+    @PostMapping("changepublic")
+    public ResponseEntity<Void> makeBookPublic(@RequestBody ChangeBookRequest request) {
+
+        Long bookId = request.getBookId();
+
+        try {
+            // Hívja a Service metódust, ami isPrivate=FALSE-ra állít
+            bookService.changeMyPrivateBookToPublicBook(bookId);
+
+            // Sikeres módosítás: 204 No Content
+            return ResponseEntity.noContent().build();
+
+        } catch (BookNotFoundException e) {
+            // Könyv nem található: 404 Not Found
+            throw e;
+        }
     }
 }
 

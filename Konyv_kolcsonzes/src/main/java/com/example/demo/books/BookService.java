@@ -1,5 +1,6 @@
 package com.example.demo.books;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,38 @@ public class BookService {
         bookRepository.save(book);
     }
 
-    public List<Book> myBooks(Long userId){
-        return bookRepository.findByUserId(userId);
+    public List<Book> myPrivateBooks(Long userId){
+        return bookRepository.findByUserIdAndIsPrivateTrue(userId);
     }
+
+    public List<Book> myPublicBooks(Long userId){
+        return bookRepository.findByUserIdAndIsPrivateFalse(userId);
+    }
+
+    @Transactional
+    public void changeMyPrivateBookToPublicBook(Long bookId) {
+
+        // 1. Könyv lekérése az ID alapján
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("A könyv nem található, ID: " + bookId));
+
+        book.setPrivate(true);
+
+        bookRepository.save(book);
+    }
+
+    @Transactional
+    public void changeMyPublicBookToPrivateBook(Long bookId) {
+
+        // 1. Könyv lekérése az ID alapján
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("A könyv nem található, ID: " + bookId));
+
+        book.setPrivate(false);
+
+        bookRepository.save(book);
+    }
+
+
+
 }

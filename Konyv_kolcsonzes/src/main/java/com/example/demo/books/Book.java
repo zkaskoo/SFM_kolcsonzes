@@ -35,4 +35,5 @@ public class Book {
 
     private Long userId;
     private Long price;
+    private boolean isPrivate = true;
 }
