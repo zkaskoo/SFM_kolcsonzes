@@ -26,7 +26,7 @@ public class BookController {
     public ResponseEntity<String> addNewBook(@RequestBody BookRequest request) {
         try {
             // dátum konvertálása
-            LocalDate date = LocalDate.parse(request.getReleaseDate());
+
 
             // PDF Base64 → byte[]
             byte[] pdfBytes = Base64.getDecoder().decode(request.getPdfBase64());
@@ -37,7 +37,7 @@ public class BookController {
             bookService.addNewBook(
                     request.getAuthor(),
                     request.getTitle(),
-                    date,
+                    request.getReleaseDate(),
                     pdfBytes,
                     pictureBytes,
                     request.getUserId(),
@@ -106,6 +106,7 @@ public class BookController {
             throw e;
         }
     }
+
 }
 
 

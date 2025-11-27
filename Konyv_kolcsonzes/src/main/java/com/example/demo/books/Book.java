@@ -24,7 +24,7 @@ public class Book {
 
     private String author;
     private String title;
-    private LocalDate releaseDate;
+    private String releaseDate;
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     private byte[] pdfFile;
