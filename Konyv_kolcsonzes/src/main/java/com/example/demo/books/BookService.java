@@ -13,7 +13,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
 
-    public void addNewBook(String author, String title, LocalDate releaseDate, byte[] pdf, byte[] picture, Long userId, Long price){
+    public void addNewBook(String author, String title, String releaseDate, byte[] pdf, byte[] picture, Long userId, Long price){
         Book book = new Book();
         book.setAuthor(author);
         book.setTitle(title);

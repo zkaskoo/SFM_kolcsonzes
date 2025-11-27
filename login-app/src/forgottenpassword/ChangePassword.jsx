@@ -142,7 +142,6 @@ export default function ChangePassword() {
           <div className="success-box">
             <strong>Sikeres jelszóváltoztatás!</strong>
             <p>Most már bejelentkezhetsz az új jelszavaddal.</p>
-            <a href="/login" className="success-link">Bejelentkezés</a>
           </div>
         )}
 

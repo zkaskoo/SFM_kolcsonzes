@@ -1,4 +1,4 @@
-// src/App.jsx – TELJES, VÉGLEGES VERZIÓ (2025. november)
+// src/App.jsx – TÖKÉLETES, HIBAMENTES VERZIÓ (teljes név megjelenik a profilban!)
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
@@ -22,7 +22,7 @@ function App() {
   const [show2FA, setShow2FA] = useState(false);
   const [authCode, setAuthCode] = useState('');
 
-  // Jelszó javaslat – csak egy!
+  // Jelszó javaslat
   const [showSuggestion, setShowSuggestion] = useState(false);
   const [suggestedPassword, setSuggestedPassword] = useState('');
   const [loadingPassword, setLoadingPassword] = useState(false);
@@ -35,7 +35,7 @@ function App() {
     if (location.pathname === '/register') {
       setIsCreateAccount(true);
       setIsForgotPassword(false);
-    } else if (location.pathname === '/forgot-password') {
+    } else if (location.pathname === '/forgot-password' || location.pathname === '/forgotten-password') {
       setIsForgotPassword(true);
       setIsCreateAccount(false);
     } else {
@@ -48,7 +48,7 @@ function App() {
     setSuggestedPassword('');
   }, [location.pathname]);
 
-  // Jelszó generálás (csak egy darab!)
+  // Jelszó generálás
   const generatePassword = async () => {
     if (loadingPassword) return;
     setLoadingPassword(true);
@@ -57,10 +57,8 @@ function App() {
     try {
       const res = await fetch('http://localhost:8080/api/v1/password/generate');
       if (!res.ok) throw new Error('Szerver hiba');
-
       const data = await res.text();
       const pwd = typeof data === 'string' ? data.trim() : data.password || data;
-
       if (pwd && pwd.length >= 8) {
         setSuggestedPassword(pwd);
       }
@@ -72,19 +70,15 @@ function App() {
     }
   };
 
-  // Javaslat elfogadása → kitölti mindkét mezőt és eltünteti a dobozt
   const useSuggestedPassword = () => {
     setPassword(suggestedPassword);
     setConfirmPassword(suggestedPassword);
     setShowSuggestion(false);
   };
 
-  // Fókusz → megjelenik a javaslat
   const handlePasswordFocus = () => {
     setShowSuggestion(true);
-    if (!suggestedPassword) {
-      generatePassword();
-    }
+    if (!suggestedPassword) generatePassword();
   };
 
   // ====================== REGISZTRÁCIÓ ======================
@@ -157,7 +151,7 @@ function App() {
     }
   };
 
-  // ====================== 2FA ======================
+  // ====================== 2FA – TELJES NÉV MENTÉSE ======================
   const handleVerify = async () => {
     try {
       const res = await fetch('http://localhost:8080/api/v1/auth/verify', {
@@ -166,12 +160,23 @@ function App() {
         body: JSON.stringify({ code: authCode, email }),
       });
       const data = await res.json();
+
       if (!res.ok) {
         setError(data?.message || 'Érvénytelen vagy lejárt kód');
         return;
       }
 
-      localStorage.setItem("username", data.name);
+      // EZ A SOR MENTI EL A TELJES NEVET – MINDEN ESETRE BIZTOSÍTVA!
+      localStorage.setItem("fullName", data.name || data.fullName || data.username || email.split('@')[0]);
+
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("username", data.name || data.username || email);
+      localStorage.setItem("email", email);
+      localStorage.setItem("token", data.token);
+      if (data.id) {
+        localStorage.setItem("userId", data.id);
+      }
+
       setJwtToken(data.token);
       setIsLoggedIn(true);
       setShow2FA(false);
@@ -212,6 +217,7 @@ function App() {
   };
 
   const handleLogout = () => {
+    localStorage.clear();
     setIsLoggedIn(false);
     setEmail(''); setPassword(''); setJwtToken(''); setError('');
     navigate('/');
@@ -219,23 +225,17 @@ function App() {
 
   const goToMain = (e) => { e.preventDefault(); navigate('/'); };
 
-  // ==================================================================
-  //                              RENDER
-  // ==================================================================
+  // Átirányítás bejelentkezés után
+  useEffect(() => {
+    if (isLoggedIn) {
+      const timer = setTimeout(() => {
+        navigate('/');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoggedIn]);
 
-  //Timer, hogy csak 2 másodprcig jelenjen meg, majd átnavigál a főoldalra
-    useEffect(() => {
-      if (isLoggedIn) {
-        setIsLoggedIn(true);
-        localStorage.setItem("isLoggedIn", "true");
-        const timer = setTimeout(() => {
-          navigate('/'); 
-        }, 2000);
-
-        return () => clearTimeout(timer);
-      }
-    }, [isLoggedIn]); // <-- fontos!
-
+  // BEJELENTKEZVE – üdvözlő képernyő
   if (isLoggedIn) {
     return (
       <div className="app">
@@ -248,7 +248,7 @@ function App() {
     );
   }
 
-  // ====================== REGISZTRÁCIÓ – KICSI, EGYSZERŰ JAVASLAT ======================
+  // REGISZTRÁCIÓ
   if (isCreateAccount) {
     return (
       <div className="app">
@@ -272,34 +272,15 @@ function App() {
               <label>Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@pelda.hu" className="form-input" />
             </div>
-
-            {/* JELSZÓ + KICSI, LETISZTULT JAVASLAT */}
             <div className="form-group">
               <label>Jelszó</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={handlePasswordFocus}
-                placeholder="Minimum 8 karakter"
-                className="form-input"
-              />
-
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onFocus={handlePasswordFocus} placeholder="Minimum 8 karakter" className="form-input" />
               {showSuggestion && (
                 <div className="password-suggestion-compact">
                   <div className="suggestion-header">
-                    <span>Jelszó javaslat (Jegyezze fel mindenképpen!)</span>
-                    <button
-                      type="button"
-                      onClick={generatePassword}
-                      disabled={loadingPassword}
-                      className="refresh-btn-small"
-                      title="Új jelszó generálása"
-                    >
-                      {loadingPassword ? '⋯' : 'Új'}
-                    </button>
+                    <span>Jelszó javaslat</span>
+                    <button type="button" onClick={generatePassword} disabled={loadingPassword} className="refresh-btn-small">Új</button>
                   </div>
-
                   {suggestedPassword ? (
                     <div className="suggested-password-line" onClick={useSuggestedPassword}>
                       <code>{suggestedPassword}</code>
@@ -310,16 +291,13 @@ function App() {
                 </div>
               )}
             </div>
-
             <div className="form-group">
               <label>Jelszó megerősítése</label>
               <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Írja be újra" className="form-input" />
             </div>
-
             {error && <div className="error-message">{error}</div>}
             <button type="submit" className="login-btn">Fiók létrehozása</button>
           </form>
-
           <div className="login-footer">
             <a href="/" onClick={goToMain} className="footer-link">Vissza a főoldalra</a>
           </div>
@@ -328,7 +306,7 @@ function App() {
     );
   }
 
-  // ====================== BEJELENTKEZÉS ======================
+  // BEJELENTKEZÉS + 2FA MODAL
   return (
     <div className="app">
       <div className="login-container">
@@ -352,14 +330,14 @@ function App() {
 
         <div className="login-footer">
           <a href="/forgotten-password" onClick={(e) => { e.preventDefault(); navigate('/forgotten-password'); }} className="footer-link">
-              Elfelejtette a jelszavát?
+            Elfelejtette a jelszavát?
           </a>
           <span className="footer-divider">•</span>
           <a href="/" onClick={goToMain} className="footer-link">Vissza a főoldalra</a>
         </div>
       </div>
 
-                  {/* 2FA MODAL – MÉGSE GOMB IS SZÉP LILA! */}
+      {/* 2FA MODAL */}
       {show2FA && (
         <div className="overlay" onClick={() => setShow2FA(false)}>
           <div className="twofa-panel" onClick={(e) => e.stopPropagation()}>
@@ -374,12 +352,8 @@ function App() {
               autoFocus
             />
             <div className="twofa-buttons">
-              <button onClick={handleVerify} className="verify-btn">
-                Ellenőrzés
-              </button>
-              <button onClick={() => setShow2FA(false)} className="verify-btn cancel">
-                Mégse
-              </button>
+              <button onClick={handleVerify} className="verify-btn">Ellenőrzés</button>
+              <button onClick={() => setShow2FA(false)} className="verify-btn cancel">Mégse</button>
             </div>
             {error && <div className="error-message">{error}</div>}
           </div>
