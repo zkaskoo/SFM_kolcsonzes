@@ -1,4 +1,4 @@
-// src/profilesite/ProfileSite.jsx – TELJESEN KÉSZ, HIBAMENTES, MŰKÖDIK MINDEN!
+// src/profilesite/ProfileSite.jsx – CSAK A KÉRT LENYÍLÓ PANEL HOZZÁADVA
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -23,6 +23,7 @@ export default function ProfileSite() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('private');
   const [showOffers, setShowOffers] = useState(false);
+  const [showTopUp, setShowTopUp] = useState(false); // ÚJ: lenyíló állapot
 
   const tradeOffers = [
     { id: 1, from: "Kata123", bookOffered: "Dűne", bookRequested: "A Gyűrűk Ura", date: "2025.11.20", status: "pending" },
@@ -78,7 +79,6 @@ export default function ProfileSite() {
         body: JSON.stringify({ userId: parseInt(userId) })
       });
 
-      // FONTOS: A backend 204 No Content-et küld, ha nincs könyv!
       if (response.status === 204) {
         setUserBooks([]);
         setLoading(false);
@@ -155,9 +155,38 @@ export default function ProfileSite() {
           </div>
 
           <div className="profile-actions">
-            <button className="profile-btn primary">
-              <Wallet size={20} /> Egyenleg feltöltés
-            </button>
+            {/* EGYENLEG FELTÖLTÉS GOMB + LENYÍLÓ */}
+            <div className="topup-section">
+              <button 
+                onClick={() => setShowTopUp(!showTopUp)} 
+                className="profile-btn primary"
+              >
+                <Wallet size={20} /> Egyenleg feltöltés
+              </button>
+
+              {showTopUp && (
+                <div className="topup-dropdown">
+                  <div className="topup-content">
+                    <button 
+                      onClick={() => setShowTopUp(false)} 
+                      className="topup-close"
+                    >
+                      <X size={22} />
+                    </button>
+                    <h3>Egyenleg feltöltés</h3>
+                    <input 
+                      type="number" 
+                      placeholder="Összeg (Ft)" 
+                      className="topup-input"
+                    />
+                    <button className="topup-pay-btn">
+                      Fizetés
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button onClick={() => navigate('/konyv-feltoltes')} className="profile-btn secondary">
               <Upload size={20} /> Könyv feltöltés
             </button>
