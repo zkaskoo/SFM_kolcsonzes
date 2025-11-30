@@ -1,4 +1,4 @@
-/* src/mainsite/MainSite.css – VÉGLEGES, GYÖNYÖRŰ VERZIÓ (látszanak a képek!) */
+/* src/mainsite/MainSite.css – VÉGLEGES + PONT A SZÖVEG ÉS GOMBOK KÖZÖTT */
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -10,7 +10,7 @@
   position: relative;
 }
 
-/* HÁTTÉRKÉPEK – MOST MÁR LÁTSZANAK SZÉPEN! */
+/* HÁTTÉRKÉPEK */
 .background-slider {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -29,12 +29,11 @@
 
 .background-image.active { opacity: 1; }
 
-/* CSUPÁN ENNYI overlay – hogy a képek szépen átjöjjenek, de a szöveg olvasható maradjon */
 .background-slider::after {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.35);   /* <<< EZT CSÖKKENTETTÜK 0.52-ről 0.35-re */
+  background: rgba(0, 0, 0, 0.35);
   z-index: -1;
 }
 
@@ -122,7 +121,6 @@
   z-index: 2;
 }
 
-/* KÖZÉPSŐ KONTÉNER – ÁTLÁTSZÓ, DE SZÉP */
 .hero-card {
   background: rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(20px);
@@ -162,12 +160,38 @@
   backdrop-filter: blur(8px);
 }
 
-/* GOMBOK ÉS PONTOK */
+/* Térköz a szöveg és a pontok között */
+.larger-spacing {
+  margin-bottom: 50px;
+}
+
+/* PONTok – most a szöveg és gombok között */
+.hero-dots {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin: 50px 0 80px 0;   /* felül és alul szellős */
+}
+
+.dot {
+  width: 15px; height: 15px; border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: all 0.4s;
+}
+
+.dot.active {
+  background: white;
+  transform: scale(1.7);
+}
+
+.dot:hover { background: rgba(255,255,255,0.8); }
+
+/* GOMBOK */
 .hero-buttons {
   display: flex;
   gap: 28px;
   justify-content: center;
-  margin-bottom: 90px;
   flex-wrap: wrap;
 }
 
@@ -189,14 +213,30 @@
 .btn-secondary { background: transparent; border: 2px solid white; color: white; }
 .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
 
-.hero-dots { display: flex; gap: 16px; justify-content: center; }
-.dot {
-  width: 15px; height: 15px; border-radius: 50%;
-  background: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.4s;
-}
-.dot.active { background: white; transform: scale(1.7); }
-.dot:hover { background: rgba(255,255,255,0.8); }
+/* BEJELENTKEZETT ÁLLAPOT */
+.logged-in-content { text-align: center; padding: 30px 20px; }
+.logged-in-greeting { font-size: 48px !important; font-weight: 800; margin-bottom: 16px; color: white; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+.username-highlight { color: #a8edea; font-weight: 900; }
+.logged-in-subtitle { font-size: 24px; color: white; margin-bottom: 50px; opacity: 0.95; }
+.logged-in-button-wrapper { display: flex; justify-content: center; margin-top: 20px; }
+.logged-in-browse-btn { padding: 18px 44px; font-size: 20px; font-weight: 600; border-radius: 50px; }
+.logged-in-browse-btn:hover { transform: translateY(-8px); box-shadow: 0 25px 50px rgba(0,0,0,0.35); }
 
+/* AVATAR + MENÜ */
+.profile-menu-wrapper { position: relative; display: flex; align-items: center; }
+.username { padding: 14px 18px; font-size: 26px; font-weight: 600; color: #333; margin-bottom: 6px; }
+.avatar-circle { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px solid rgba(255,255,255,0.6); transition: 0.2s ease; }
+.avatar-circle:hover { transform: scale(1.08); border-color: #ffffff; }
+.avatar-image { width: 100%; height: 100%; object-fit: cover; }
+.dropdown-menu { position: absolute; top: 55px; right: 0; background: white; border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); padding: 10px 0; width: 180px; animation: fadeDown 0.18s ease-out; z-index: 2000; }
+.dropdown-item { background: none; border: none; width: 100%; padding: 12px 18px; text-align: left; cursor: pointer; font-size: 15px; color: #333; transition: 0.2s; }
+.dropdown-item:hover { background: #f1f1ff; }
+.dropdown-item.logout { color: #d00000; }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+.topbar-auth-area { display: flex; align-items: center; gap: 20px; }
+
+/* FOOTER */
 .mainsite-footer {
   padding: 40px;
   text-align: center;
@@ -208,133 +248,12 @@
 @media (max-width: 968px) {
   .hero-card h1 { font-size: 64px; }
   .hero-card { padding: 60px 70px; }
+  .hero-dots { margin: 40px 0 40px 0; }
 }
 @media (max-width: 480px) {
   .hero-card h1 { font-size: 48px; }
   .hero-card { padding: 50px 40px; }
   .hero-buttons { flex-direction: column; align-items: center; }
   .btn-primary, .btn-secondary { width: 280px; }
-}
-
-
-/* ============================
-   AVATAR + LEGÖRDÜLŐ MENÜ
-   ============================ */
-
-.profile-menu-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.username {
-  padding: 14px 18px;
-  font-size: 26px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 6px;
-}
-
-/* Avatar kör */
-.avatar-circle {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  overflow: hidden;
-  cursor: pointer;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  transition: 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-circle:hover {
-  transform: scale(1.08);
-  border-color: #ffffff;
-}
-
-.avatar-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Dropdown */
-.dropdown-menu {
-  position: absolute;
-  top: 55px;
-  right: 0;
-  background: white;
-  border-radius: 14px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-  padding: 10px 0;
-  width: 180px;
-  animation: fadeDown 0.18s ease-out;
-  z-index: 2000;
-}
-
-.dropdown-item {
-  background: none;
-  border: none;
-  width: 100%;
-  padding: 12px 18px;
-  text-align: left;
-  cursor: pointer;
-  font-size: 15px;
-  color: #333;
-  transition: 0.2s;
-}
-
-.dropdown-item:hover {
-  background: #f1f1ff;
-}
-
-.dropdown-item.logout {
-  color: #d00000;
-}
-
-@keyframes fadeDown {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ============================
-   TOPBAR KERESŐMEZŐ
-   ============================ */
-
-.topbar-auth-area {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.topbar-search {
-  padding: 10px 18px;
-  border-radius: 50px;
-  background: rgba(255, 255, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: white;
-  font-size: 15px;
-  outline: none;
-  width: 240px;
-  transition: 0.25s ease;
-}
-
-.topbar-search::placeholder {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.topbar-search:focus {
-  background: rgba(255, 255, 255, 0.35);
-  width: 300px;
-  border-color: white;
+  .larger-spacing { margin-bottom: 50px; }
 }

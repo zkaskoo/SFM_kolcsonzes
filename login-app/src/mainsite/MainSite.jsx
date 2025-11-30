@@ -1,10 +1,9 @@
-// src/mainsite/MainSite.jsx
+// src/mainsite/MainSite.jsx – VÉGLEGES, PONT A SZÖVEG ÉS GOMBOK KÖZÖTT
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import './MainSite.css';
 
-// KÉPEK IMPORTJA
 import kep1 from '/src/mainsite/fooldalkep1.png';
 import kep2 from '/src/mainsite/fooldalkep2.png';
 import kep3 from '/src/mainsite/fooldalkep3.jpg';
@@ -18,29 +17,27 @@ export default function MainSite() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-  const username = localStorage.getItem("username");
-
+  const username = localStorage.getItem("username") || "Felhasználó";
 
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
+    localStorage.clear();
     navigate('/');
     window.location.reload();
   };
 
   const subtitles = [
     "Rengeteg könyv és e-book.",
-    "Kölcsönözzön online, bárhonnan, bármikor – csak egy kattintás.",
+    "Szerezzen könyveket online, bárhonnan, bármikor",
     "Cseréljen másokkal, kövesse nyilvántartását.",
-    "Modern, gyors, biztonságos – minden, amire egy olvasónak szüksége van."
+    "Modern, gyors, biztonságos."
   ];
 
+  // Háttérképek váltása MINDIG (bejelentkezve is)
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % subtitles.length);
+      setCurrentIndex((prev) => (prev + 1) % images.length);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -79,34 +76,26 @@ export default function MainSite() {
               </>
             ) : (
               <div className="topbar-auth-area">
+                <div className="username">{username}</div>
 
-                <div className="username">
-                  {username || "Ismeretlen felhasználó"}
-                </div>
-
-                {/* AVATAR + MENÜ */}
                 <div className="profile-menu-wrapper">
-
                   <div
                     className="avatar-circle"
-                    onClick={() => setMenuOpen(prev => !prev)}
+                    onClick={() => setMenuOpen(!menuOpen)}
                   >
                     <img src={avatar} alt="avatar" className="avatar-image" />
                   </div>
 
                   {menuOpen && (
                     <div className="dropdown-menu">
-
                       <button onClick={() => navigate('/profile')} className="dropdown-item">
                         Profilom
                       </button>
-
                       <button onClick={handleLogout} className="dropdown-item logout">
                         Kijelentkezés
                       </button>
                     </div>
                   )}
-
                 </div>
               </div>
             )}
@@ -117,35 +106,57 @@ export default function MainSite() {
       {/* HERO */}
       <section className="hero">
         <div className="hero-content">
-
           <div className="hero-card">
-            <h1>Üdvözöljük az olvasók közösségében</h1>
-            <p key={currentIndex} className="hero-subtitle dynamic-subtitle fade-in-up">
-              {subtitles[currentIndex]}
-            </p>
+
+            {/* BEJELENTKEZETT ÁLLAPOT */}
+            {isLoggedIn ? (
+              <div className="logged-in-content">
+                <h1 className="logged-in-greeting">
+                  Szép napot kedves <span className="username-highlight">{username}</span>!
+                </h1>
+                <p className="logged-in-subtitle">
+                  Örülünk, hogy újra itt van.
+                </p>
+
+                <div className="logged-in-button-wrapper">
+                  <button className="btn-primary logged-in-browse-btn">
+                    Böngészés a publikus könyvek között <ArrowRight size={22} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* KIJELENTKEZETT ÁLLAPOT – PONT A SZÖVEG ÉS GOMBOK KÖZÖTT */
+              <>
+                <h1>Üdvözöljük az olvasók közösségében</h1>
+
+                <p key={currentIndex} className="hero-subtitle dynamic-subtitle fade-in-up larger-spacing">
+                  {subtitles[currentIndex]}
+                </p>
+
+                {/* 4 PONT – SZÉPEN KÖZÉPEN, A SZÖVEG ÉS GOMBOK KÖZÖTT */}
+                <div className="hero-dots">
+                  {subtitles.map((_, index) => (
+                    <span
+                      key={index}
+                      className={`dot ${index === currentIndex ? 'active' : ''}`}
+                      onClick={() => setCurrentIndex(index)}
+                    />
+                  ))}
+                </div>
+
+                {/* GOMBOK */}
+                <div className="hero-buttons">
+                  <button onClick={() => navigate('/register')} className="btn-primary">
+                    Regisztráció <ArrowRight size={20} />
+                  </button>
+                  <button onClick={() => navigate('/login')} className="btn-secondary">
+                    Bejelentkezés <ArrowRight size={20} />
+                  </button>
+                </div>
+              </>
+            )}
+
           </div>
-
-          {!isLoggedIn && (
-            <div className="hero-buttons">
-              <button onClick={() => navigate('/register')} className="btn-primary">
-                Regisztráció <ArrowRight size={20} />
-              </button>
-              <button onClick={() => navigate('/login')} className="btn-secondary">
-                Bejelentkezés <ArrowRight size={20} />
-              </button>
-            </div>
-          )}
-
-          <div className="hero-dots">
-            {subtitles.map((_, index) => (
-              <span
-                key={index}
-                className={`dot ${index === currentIndex ? 'active' : ''}`}
-                onClick={() => setCurrentIndex(index)}
-              />
-            ))}
-          </div>
-
         </div>
       </section>
 
