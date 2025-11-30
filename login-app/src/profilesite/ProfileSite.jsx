@@ -1,4 +1,4 @@
-// src/profilesite/ProfileSite.jsx – CSAK A KÉRT LENYÍLÓ PANEL HOZZÁADVA
+// src/profilesite/ProfileSite.jsx – HÁTTÉRKÉPEK AUTOMATIKUSAN VÁLTAKOZNAK (PONT NÉLKÜL!)
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -7,6 +7,14 @@ import {
 } from 'lucide-react';
 import './ProfileSite.css';
 import avatar from '/src/mainsite/avatar.jpg';
+
+// KÉPEK IMPORTJA
+import kep1 from '/src/mainsite/fooldalkep1.png';
+import kep2 from '/src/mainsite/fooldalkep2.png';
+import kep3 from '/src/mainsite/fooldalkep3.jpg';
+import kep4 from '/src/mainsite/fooldalkep4.jpg';
+
+const images = [kep1, kep2, kep3, kep4];
 
 export default function ProfileSite() {
   const navigate = useNavigate();
@@ -23,7 +31,17 @@ export default function ProfileSite() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('private');
   const [showOffers, setShowOffers] = useState(false);
-  const [showTopUp, setShowTopUp] = useState(false); // ÚJ: lenyíló állapot
+  const [showTopUp, setShowTopUp] = useState(false);
+
+  // HÁTTÉRKÉP AUTOMATIKUS VÁLTÁSA – 5 másodpercenként
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const tradeOffers = [
     { id: 1, from: "Kata123", bookOffered: "Dűne", bookRequested: "A Gyűrűk Ura", date: "2025.11.20", status: "pending" },
@@ -128,11 +146,15 @@ export default function ProfileSite() {
   return (
     <div className="profilesite-wrapper">
 
+      {/* HÁTTÉRKÉPEK – AUTOMATIKUS VÁLTÁS, PONT NÉLKÜL */}
       <div className="background-slider">
-        <div className="background-image active" style={{ backgroundImage: `url(/src/mainsite/fooldalkep1.png)` }} />
-        <div className="background-image" style={{ backgroundImage: `url(/src/mainsite/fooldalkep2.png)` }} />
-        <div className="background-image" style={{ backgroundImage: `url(/src/mainsite/fooldalkep3.jpg)` }} />
-        <div className="background-image" style={{ backgroundImage: `url(/src/mainsite/fooldalkep4.jpg)` }} />
+        {images.map((img, index) => (
+          <div
+            key={index}
+            className={`background-image ${index === currentIndex ? 'active' : ''}`}
+            style={{ backgroundImage: `url(${img})` }}
+          />
+        ))}
       </div>
 
       <button onClick={() => navigate('/')} className="fixed-back-btn">
@@ -155,7 +177,6 @@ export default function ProfileSite() {
           </div>
 
           <div className="profile-actions">
-            {/* EGYENLEG FELTÖLTÉS GOMB + LENYÍLÓ */}
             <div className="topup-section">
               <button 
                 onClick={() => setShowTopUp(!showTopUp)} 

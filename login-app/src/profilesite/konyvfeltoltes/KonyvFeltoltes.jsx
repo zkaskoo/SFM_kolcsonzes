@@ -1,5 +1,7 @@
 // src/profilesite/konyvfeltoltes/KonyvFeltoltes.jsx
-import { useState } from 'react';
+// HÁTTÉRKÉPEK AUTOMATIKUSAN VÁLTAKOZNAK – PONT NÉLKÜL, PONT ÚGY, MINT A TÖBBI OLDALON!
+
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -12,9 +14,27 @@ import {
 } from 'lucide-react';
 import './KonyvFeltoltes.css';
 
+// KÉPEK IMPORTJA – ugyanazok, mint a MainSite-on
+import kep1 from '/src/mainsite/fooldalkep1.png';
+import kep2 from '/src/mainsite/fooldalkep2.png';
+import kep3 from '/src/mainsite/fooldalkep3.jpg';
+import kep4 from '/src/mainsite/fooldalkep4.jpg';
+
+const images = [kep1, kep2, kep3, kep4];
+
 export default function KonyvFeltoltes() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+
+  // HÁTTÉRKÉP VÁLTÁS – 5 másodpercenként
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -23,7 +43,6 @@ export default function KonyvFeltoltes() {
     price: '',
     coverImage: null,
     pdfFile: null
-  // opcionális
   });
 
   const [imagePreview, setImagePreview] = useState(null);
@@ -91,15 +110,6 @@ export default function KonyvFeltoltes() {
         price: parseInt(formData.price) || 0
       };
 
-      console.log('KÖNYV FELTÖLTÉSE – ELKÜLDÖTT ADATOK');
-console.log('├─ author:', formData.author);
-console.log('├─ title:', formData.title);
-console.log('├─ releaseDate:', formData.year ? `${formData.year}-01-01` : null);
-console.log('├─ pdfBase64 hossza:', pdfBase64.length > 0 ? pdfBase64.length + ' karakter' : 'nincs');
-console.log('├─ pictureBase64 hossza:', pictureBase64.length + ' karakter');
-console.log('└─ userId (elküldve):', parseInt(userId, 10));
-console.log('   teljes payload:', payload);
-
       const response = await fetch('http://localhost:8080/api/v1/books/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -124,12 +134,15 @@ console.log('   teljes payload:', payload);
   return (
     <div className="konyvfeltoltes-wrapper">
 
-      {/* HÁTTÉR */}
+      {/* HÁTTÉRKÉPEK – AUTOMATIKUS VÁLTÁS (PONT NÉLKÜL) */}
       <div className="background-slider">
-        <div className="background-image active" style={{ backgroundImage: `url(/src/mainsite/fooldalkep1.png)` }} />
-        <div className="background-image" style={{ backgroundImage: `url(/src/mainsite/fooldalkep2.png)` }} />
-        <div className="background-image" style={{ backgroundImage: `url(/src/mainsite/fooldalkep3.jpg)` }} />
-        <div className="background-image" style={{ backgroundImage: `url(/src/mainsite/fooldalkep4.jpg)` }} />
+        {images.map((img, index) => (
+          <div
+            key={index}
+            className={`background-image ${index === currentIndex ? 'active' : ''}`}
+            style={{ backgroundImage: `url(${img})` }}
+          />
+        ))}
       </div>
 
       {/* VISSZA GOMB */}
