@@ -7,6 +7,7 @@ import com.example.demo.email.FileReaderTemplate;
 import com.example.demo.password.ValidPasswordCheck;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,6 +25,7 @@ public class ForgottenPasswordService {
     private final FileReaderTemplate fileReaderTemplate;
     private final EmailService emailService;
     private final ValidPasswordCheck validPasswordCheck;
+    private final PasswordEncoder passwordEncoder;
 
 
     public boolean generateResetToken(String email){
@@ -39,12 +41,12 @@ public class ForgottenPasswordService {
 
         String token = UUID.randomUUID().toString();
         ForgottenPassword forgottenPassword = new ForgottenPassword();
-        forgottenPassword.setUserEmail(user.getEmail());
+        forgottenPassword.setEmail(user.getEmail());
         forgottenPassword.setResetToken(token);
         forgottenPassword.setResetTokenExpiryDate(LocalDateTime.now().plusMinutes(15));
         forgottenPasswordRepository.save(forgottenPassword);
 
-        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+        String resetLink = "http://localhost:5173/reset-password?token=" + token;
         String forgottenHtml = buildConfirmationEmail3(user.getName(), resetLink);
 
 
@@ -78,28 +80,39 @@ public class ForgottenPasswordService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hibás vagy lejárt token");
         }
 
-        return forgottenPassword.getUserEmail();
+        return forgottenPassword.getEmail();
     }
-    /*
 
-    public boolean isChangePassword(String email, String password,String confirmPassword){
+
+    public boolean isChangePassword(String email, String password, String confirmPassword) {
         Optional<AppUser> optional = appUserRepository.findByEmail(email);
 
-        if (!validPasswordCheck.StrongPassword(password)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A jelszónak legalább 8 karakter hosszúnak kell lennie, és tartalmaznia kell kisbetűt, nagybetűt, valamint számot.");
-        }
-
-        if (!password.equals(confirmPassword)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem egyeznek a jelszavak");
+        if (optional.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem található felhasználó ezzel az email címmel");
         }
 
         AppUser appUser = optional.get();
 
-        if (appUser.getPassword().equals(password)){
+        if (!validPasswordCheck.StrongPassword(password)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A jelszónak legalább 8 karakter hosszúnak kell lennie, és tartalmaznia kell kisbetűt, nagybetűt, valamint számot.");
+        }
+
+        if (!password.equals(confirmPassword)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem egyeznek a jelszavak");
+        }
+
+        // Ha jelszavak hash-elve vannak:
+        if (passwordEncoder.matches(password, appUser.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Az új jelszó nem egyezhet meg a régi jelszóval");
         }
 
-        appUser.setPassword();
+
+        forgottenPasswordRepository.deleteByEmail(email);
+        appUser.setPassword(passwordEncoder.encode(password));
+        appUserRepository.save(appUser);
+
+        return true;
     }
-     */
+
+
 }

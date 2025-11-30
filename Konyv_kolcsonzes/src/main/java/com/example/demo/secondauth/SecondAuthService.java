@@ -73,9 +73,14 @@ public class SecondAuthService {
         var user = appUserRepository.findByEmail(email)
                 .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
+        System.out.println(user.getId());
         return LoginResponse.builder()
+                .id(user.getId())
                 .token(jwtToken)
                 .username(user.getRealUsername())
+                .name(user.getName())
+                .money(user.getMoney())
+                .email(user.getEmail())
                 .build();
     }
 }

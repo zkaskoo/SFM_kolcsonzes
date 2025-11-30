@@ -25,4 +25,19 @@ public class ForgottenPasswordController {
     public String validateResetToken(@RequestBody TokenRequest request) {
         return forgottenPasswordService.validResetToken(request.getToken());
     }
+
+    @PostMapping("/change")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
+        boolean success = forgottenPasswordService.isChangePassword(
+                request.getEmail(),
+                request.getPassword(),
+                request.getConfirmPassword()
+        );
+
+        if (success) {
+            return ResponseEntity.ok("A jelszó sikeresen megváltozott.");
+        } else {
+            return ResponseEntity.badRequest().body("Hiba történt a jelszó módosítása során.");
+        }
+    }
 }

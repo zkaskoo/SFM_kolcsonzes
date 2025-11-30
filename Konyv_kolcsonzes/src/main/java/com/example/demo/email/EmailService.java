@@ -58,7 +58,7 @@ public class EmailService {
         }
     }
 
-    public void sendForgottenEmail(String email, String to){
+    public void sendForgottenEmail(String to, String email){
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper =

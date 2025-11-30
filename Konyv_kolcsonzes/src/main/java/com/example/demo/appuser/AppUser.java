@@ -1,5 +1,6 @@
 package com.example.demo.appuser;
 
+import com.example.demo.books.Book;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,9 +28,6 @@ public class AppUser implements UserDetails {
     private String email;
     private String password;
     private double money;
-    @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Book> books = new ArrayList<>();
 
 
     @Override
