@@ -164,7 +164,7 @@ export default function KonyvFeltoltes() {
               ) : (
                 <div className="image-upload-placeholder">
                   <ImageIcon size={48} />
-                  <p>Kattints a borítókép feltöltéséhez *</p>
+                  <p>Kattints a borítókép feltöltéséhez</p>
                 </div>
               )}
             </label>
@@ -190,7 +190,7 @@ export default function KonyvFeltoltes() {
                       <span className="pdf-filename">{pdfFileName}</span>
                     ) : (
                       <span className="pdf-placeholder-text">
-                        PDF feltöltése <strong>(opcionális)</strong>
+                        Könyv feltöltése (PDF)
                       </span>
                     )}
                   </div>
@@ -207,47 +207,47 @@ export default function KonyvFeltoltes() {
               {/* ADATOK GRID */}
               <div className="form-grid">
                 <div className="input-group">
-                  <label><BookOpen size={18} /> Cím *</label>
+                  <label><BookOpen size={18} />Cím</label>
                   <input
                     type="text"
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="pl. A Gyűrűk Ura"
+                    placeholder="Adja meg a könyv címét"
                   />
                 </div>
 
                 <div className="input-group">
-                  <label>Szerző *</label>
+                  <label>Szerző</label>
                   <input
                     type="text"
                     required
                     value={formData.author}
                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    placeholder="pl. J.R.R. Tolkien"
+                    placeholder="Adja meg a szerző nevét."
                   />
                 </div>
 
                 <div className="input-group">
-                  <label><Calendar size={18} /> Kiadás éve</label>
+                  <label><Calendar size={18} />Kiadás</label>
                   <input
                     type="number"
                     min="1000"
                     max="2025"
                     value={formData.year}
                     onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                    placeholder="pl. 1954"
+                    placeholder="Adja meg a kiadás évét."
                   />
                 </div>
 
                 <div className="input-group">
-                  <label><DollarSign size={18} /> Ár (Ft)</label>
+                  <label>Ár (Ft)</label>
                   <input
                     type="number"
                     min="0"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    placeholder="pl. 3500"
+                    placeholder="Adja meg a kívánt árat."
                   />
                 </div>
               </div>

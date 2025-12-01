@@ -119,7 +119,7 @@ export default function MainSite() {
                 </p>
 
                 <div className="logged-in-button-wrapper">
-                  <button className="btn-primary logged-in-browse-btn">
+                  <button className="btn-primary logged-in-browse-btn" onClick={() => navigate('/browse')}>
                     Böngészés a publikus könyvek között <ArrowRight size={22} />
                   </button>
                 </div>

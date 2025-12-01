@@ -1,0 +1,325 @@
+/* src/bongeszes/Bongeszes.css – TELJES, VÉGLEGES, SZÉP VERZIÓ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.bongeszes-wrapper {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: 100px;
+}
+
+/* HÁTTÉR */
+.background-slider {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+}
+.background-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 2.2s ease-in-out;
+}
+.background-image.active { opacity: 1; }
+.background-slider::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: -1;
+}
+
+/* TOPBAR */
+.mainsite-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  z-index: 1000;
+}
+.topbar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 26px;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+}
+.topbar-logo .highlight {
+  background: linear-gradient(135deg, #a8edea, #fed6e3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.topbar-btn.login {
+  padding: 10px 24px;
+  border-radius: 50px;
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.topbar-btn.login:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: white;
+}
+
+.topbar-auth-area {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.username {
+  font-size: 22px;
+  font-weight: 600;
+  color: white;
+}
+.avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  transition: 0.2s;
+}
+.avatar-circle:hover {
+  transform: scale(1.1);
+  border-color: white;
+}
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dropdown-menu {
+  position: absolute;
+  top: 68px;
+  right: 20px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  padding: 8px 0;
+  width: 180px;
+  animation: fadeDown 0.2s ease-out;
+  z-index: 2000;
+}
+.dropdown-item {
+  width: 100%;
+  padding: 12px 20px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  color: #333;
+}
+.dropdown-item:hover { background: #f0f0ff; }
+.dropdown-item.logout { color: #d00; font-weight: 600; }
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* VISSZA GOMB */
+.fixed-back-btn {
+  position: fixed;
+  top: 100px;
+  left: 30px;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(12px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 14px 24px;
+  border-radius: 50px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+.fixed-back-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-4px);
+}
+
+/* FŐ TARTALOM */
+.bongeszes-hero {
+  padding: 140px 40px 100px;
+  max-width: 1400px;
+  margin: 0 auto;
+  text-align: center;
+}
+.hero-card.bongeszes-card {
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 36px;
+  padding: 60px 80px;
+  max-width: 1000px;
+  margin: 0 auto;
+  box-shadow: 0 25px 70px rgba(0,0,0,0.4);
+}
+.bongeszes-title {
+  font-size: 42px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  margin-bottom: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* FEHÉR PANELEK */
+.white-panel {
+  background: white;
+  border-radius: 28px;
+  padding: 40px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  backdrop-filter: blur(12px);
+  max-width: 900px;
+  margin: 40px auto;
+}
+
+/* SZŰRŐPANEL FEJLÉC */
+.filter-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e0e7ff;
+  color: #667eea;
+  font-size: 24px;
+  font-weight: 700;
+}
+.filter-icon {
+  color: #667eea;
+}
+
+/* SZŰRŐ FORM */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-bottom: 32px;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.input-group label {
+  color: #667eea;
+  font-weight: 600;
+  font-size: 16px;
+}
+.input-group input[type="text"],
+.price-input {
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  background: #f8f9ff;
+  color: #2d3748;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+.input-group input[type="text"]:focus,
+.price-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+.input-group input::placeholder,
+.price-input::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+/* KERESÉS GOMB */
+.submit-btn {
+  margin: 20px auto 0;
+  padding: 18px 48px;
+  background: #667eea;
+  color: white;
+  font-size: 19px;
+  font-weight: 700;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.4s;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+.submit-btn:hover {
+  background: #5a6fd8;
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.5);
+}
+
+/* EREDMÉNYEK */
+.results-container.white-panel {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.results-text {
+  font-size: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+/* FOOTER */
+.mainsite-footer {
+  padding: 40px;
+  text-align: center;
+  background: rgba(0,0,0,0.15);
+  color: white;
+  font-size: 15px;
+  margin-top: 50px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .hero-card.bongeszes-card { padding: 50px 30px; }
+}
+@media (max-width: 480px) {
+  .hero-card.bongeszes-card { padding: 40px 20px; }
+  .bongeszes-title { font-size: 36px; }
+  .white-panel { padding: 30px; }
+  .topbar-container { padding: 0 20px; }
+  .filter-header { font-size: 21px; }
+}
