@@ -139,6 +139,16 @@ public class BookController {
         }
     }
 
+    @PostMapping("/allbooks")
+    public ResponseEntity<List<Book>> getAllBooks(@RequestBody MyBookRequest request) {
+        List<Book> books = bookService.getMyAllBooks(request.getUserId());
+        if (books.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(books);
+    }
+
 }
 
 

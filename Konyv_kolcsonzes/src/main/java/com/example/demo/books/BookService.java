@@ -59,6 +59,10 @@ public class BookService {
         bookRepository.save(book);
     }
 
+    public List<Book> getMyAllBooks(Long userId){
+        return bookRepository.findByUserId(userId);
+    }
+
 
 
 }
