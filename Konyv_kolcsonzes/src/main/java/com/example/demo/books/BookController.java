@@ -149,6 +149,11 @@ public class BookController {
         return ResponseEntity.ok(books);
     }
 
+    @PostMapping("/others")
+    public List<Book> getAllBooksWithoutOwnBooks(@RequestBody AllBookRequest request) {
+        return bookService.getAllBooksWithoutOwnBooks(request.getId());
+    }
+
 }
 
 

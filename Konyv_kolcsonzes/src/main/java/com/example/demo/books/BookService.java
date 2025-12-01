@@ -63,6 +63,13 @@ public class BookService {
         return bookRepository.findByUserId(userId);
     }
 
+    public List<Book> getAllBooksWithoutOwnBooks(Long userId){
+        return bookRepository.findAllByUserIdNot(userId);
+    }
+
+
+
+
 
 
 }
