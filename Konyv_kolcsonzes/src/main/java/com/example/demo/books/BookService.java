@@ -105,6 +105,13 @@ public class BookService {
         appUserRepository.save(appUser2);
     }
 
+    public Double getMoney(Long id)
+    {
+        AppUser appUser = appUserRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("A felahsználó nem található"));
+
+        return appUser.getMoney();
+    }
 
 
 

@@ -1,14 +1,18 @@
 package com.example.demo.books;
 
+import com.example.demo.appuser.AppUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/books")
@@ -163,6 +167,18 @@ public class BookController {
         );
 
         return ResponseEntity.ok("Sikeres vásárlás!");
+    }
+
+    @PostMapping("/balance")
+    public ResponseEntity<Map<String, Object>> getMoney(@RequestBody UserIdRequest request) {
+
+        Double money = bookService.getMoney(request.getId());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("userId", request.getId());
+        body.put("money", money);
+
+        return ResponseEntity.ok(body);
     }
 }
 

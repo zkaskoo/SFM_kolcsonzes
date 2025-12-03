@@ -11,6 +11,7 @@ import ChangePassword from './forgottenpassword/ChangePassword.jsx'; // vagy aho
 import ProfileSite from './profilesite/ProfileSite.jsx';
 import KonyvFeltoltes from './profilesite/konyvfeltoltes/KonyvFeltoltes';
 import Bongeszes from './bongeszes/Bongeszes';
+import UploadMoney from './uploadmoney/uploadMoney.jsx'
 
 import './index.css';
 
@@ -30,6 +31,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/profile" element={<ProfileSite />} />
         <Route path="/konyv-feltoltes" element={<KonyvFeltoltes />} />
         <Route path="/browse" element={<Bongeszes />} />
+        <Route path="/upload-money" element={<UploadMoney/>}/>
 
         {/* Minden más → loginra irányít (opcionális) */}
         <Route path="*" element={<App />} />
