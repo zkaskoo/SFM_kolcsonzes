@@ -154,6 +154,16 @@ public class BookController {
         return bookService.getAllBooksWithoutOwnBooks(request.getId());
     }
 
+    @PostMapping("/buy")
+    public ResponseEntity<String> buyBook(@RequestBody BuyBookRequest request) {
+        bookService.buyBook(
+                request.getId(),
+                request.getBookId(),
+                request.getPrice()
+        );
+
+        return ResponseEntity.ok("Sikeres vásárlás!");
+    }
 }
 
 

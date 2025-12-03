@@ -1,8 +1,13 @@
 package com.example.demo.books;
 
+import com.example.demo.appuser.AppUserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import com.example.demo.appuser.AppUser;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,7 +18,7 @@ import java.util.List;
 public class BookService {
 
     private final BookRepository bookRepository;
-
+    private final AppUserRepository appUserRepository;
     public void addNewBook(String author, String title, String releaseDate, byte[] pdf, byte[] picture, Long userId, Long price){
         Book book = new Book();
         book.setAuthor(author);
@@ -67,6 +72,38 @@ public class BookService {
         return bookRepository.findAllByUserIdNot(userId);
     }
 
+    public void buyBook(Long id, Long bookId, Long price){
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("A könyv nem található, ID: " + bookId));
+
+        Long userId = book.getUserId();
+
+
+
+        AppUser appUser = appUserRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("A felahsználó nem található"));
+
+        if (appUser.getMoney() < price){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nincs elég pénzed a raktárban!");
+        }
+
+
+
+        AppUser appUser2 = appUserRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("A felhasználó nem található!"));
+
+        appUser.setMoney(appUser.getMoney() - price);
+
+        appUserRepository.save(appUser);
+
+        book.setUserId(id);
+
+        bookRepository.save(book);
+
+        appUser2.setMoney(appUser2.getMoney() + price);
+
+        appUserRepository.save(appUser2);
+    }
 
 
 
