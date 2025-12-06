@@ -180,6 +180,16 @@ public class BookController {
 
         return ResponseEntity.ok(body);
     }
+
+    @PostMapping("/filter")
+    public List<Book> getFilteredBooks(@RequestBody BookFilterRequest filterRequest) {
+        return bookService.getFilteredBook(
+                filterRequest.getId(),
+                filterRequest.getTitle(),
+                filterRequest.getAuthor(),
+                filterRequest.getMaximumPrice()
+        );
+    }
 }
 
 
