@@ -1,4 +1,5 @@
-// src/profilesite/ProfileSite.jsx – TELJES, VÉGLEGES VERZIÓ (2025.12.03)
+// src/profilesite/ProfileSite.jsx – TELJES, TÖRLÉS MŰKÖDIK!
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
@@ -35,7 +36,6 @@ export default function ProfileSite() {
   const [topUpAmount, setTopUpAmount] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Háttérkép slider
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
@@ -43,78 +43,72 @@ export default function ProfileSite() {
     return () => clearInterval(interval);
   }, []);
 
-  // EGYENLEG LEKÉRÉSE A BACKENDBŐL – MINDIG FRISS!
   const fetchBalance = async () => {
-  const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId');
-
-  if (!token || !userId) {
-    console.warn("Nincs token vagy userId – egyenleg nem tölthető be");
-    setBalance(0);
-    return;
-  }
-
-  try {
-    const response = await fetch('http://localhost:8080/api/v1/books/balance', {
-      method: 'POST',                                    // FONTOS: POST!
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ id: parseInt(userId) })     // a te UserIdRequest-ednek megfelelő body
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      // data: { "userId": 7, "money": 17400.0 }
-
-      const balanceInt = Math.round(data.money || 0);
-
-      setBalance(balanceInt);
-      localStorage.setItem('balance', balanceInt.toString());
-
-      console.log("Egyenleg betöltve:", balanceInt, "Ft");
-    } else {
-      console.error("Hiba az egyenleg lekérésekor:", response.status);
-      setBalance(0);
-    }
-  } catch (err) {
-    console.error("Hálózati hiba az egyenleg lekérésekor:", err);
-    setBalance(parseInt(localStorage.getItem('balance') || '0'));
-  }
-};
+    if (!token || !userId) return;
+    try {
+      const res = await fetch('http://localhost:8080/api/v1/books/balance', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: parseInt(userId) })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBalance(Math.round(data.money || 0));
+        localStorage.setItem('balance', Math.round(data.money || 0).toString());
+      }
+    } catch (err) { console.error(err); }
+  };
 
   const toggleVisibility = async (bookId, currentIsPublic) => {
     const endpoint = currentIsPublic
       ? 'http://localhost:8080/api/v1/books/changeprivate'
       : 'http://localhost:8080/api/v1/books/changepublic';
-
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookId })
       });
-
-      if (res.ok || res.status === 204) {
-        fetchBooks(activeTab);
-      } else {
-        alert('Hiba a láthatóság váltásakor!');
-      }
-    } catch (err) {
-      console.error('Láthatóság váltás hiba:', err);
-    }
+      if (res.ok || res.status === 204) fetchBooks(activeTab);
+    } catch (err) { console.error(err); }
   };
 
-  const fetchBooks = async (type) => {
-    if (!token || !userId) {
-      setError('Nincs bejelentkezve vagy hiányzik a felhasználói azonosító!');
-      setLoading(false);
-      return;
+  // ÚJ: TÖRLÉS FÜGGVÉNY
+  // TÖRLÉS FÜGGVÉNY – MOST MÁR HELYESEN KÜLDI AZ ID-T!
+const deleteBook = async (bookId) => {
+  if (!bookId) {
+    alert("Hiba: hiányzó könyv ID!");
+    return;
+  }
+
+  if (!confirm("Biztosan törölni szeretnéd ezt a könyvet? Ez végleges!")) return;
+
+  try {
+    const response = await fetch('http://localhost:8080/api/v1/books/delete', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ id: bookId })  // FONTOS: { id: bookId }, nem { bookId }!!!
+    });
+
+    if (response.ok || response.status === 204) {
+      alert("Könyv sikeresen törölve!");
+      fetchBooks(activeTab); // Frissítjük a listát
+    } else {
+      const errorText = await response.text();
+      console.error("Törlési hiba:", response.status, errorText);
+      alert("Hiba történt a törlés során.");
     }
+  } catch (err) {
+    console.error("Hálózati hiba a törlésnél:", err);
+    alert("Nem sikerült kapcsolódni a szerverhez.");
+  }
+};
+
+  const fetchBooks = async (type) => {
+    if (!token || !userId) { setError('Bejelentkezés szükséges!'); setLoading(false); return; }
 
     const endpoint = type === 'private'
       ? 'http://localhost:8080/api/v1/books/privatebooks'
@@ -126,10 +120,7 @@ export default function ProfileSite() {
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: parseInt(userId) })
       });
 
@@ -139,15 +130,7 @@ export default function ProfileSite() {
         return;
       }
 
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          alert('Lejárt a bejelentkezés!');
-          localStorage.clear();
-          navigate('/');
-          return;
-        }
-        throw new Error(`HTTP ${response.status}`);
-      }
+      if (!response.ok) throw new Error('Hiba');
 
       const books = await response.json();
       const formatted = books.map(book => ({
@@ -162,78 +145,49 @@ export default function ProfileSite() {
 
       setUserBooks(formatted);
     } catch (err) {
-      console.error('Hiba a könyvek betöltésekor:', err);
-      setError('Nem sikerült betölteni a könyveket. Ellenőrizd a szervert vagy a bejelentkezést.');
+      setError('Nem sikerült betölteni a könyveket.');
     } finally {
       setLoading(false);
     }
   };
 
-  // FŐ useEffect – minden releváns változáskor frissít
   useEffect(() => {
-    if (!isLoggedIn || !token || !userId) {
-      navigate('/');
-      return;
-    }
-
+    if (!isLoggedIn || !token || !userId) { navigate('/'); return; }
     fetchBooks(activeTab);
-    fetchBalance(); // minden betöltéskor friss egyenleg
-  }, [isLoggedIn, token, userId, navigate, activeTab, location.pathname, location.state]);
-
-  // Ablak fókuszban → frissítjük (pl. fizetés után visszalépés)
-  useEffect(() => {
-    const handleFocus = () => fetchBalance();
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [token]);
+    fetchBalance();
+  }, [isLoggedIn, token, userId, navigate, activeTab]);
 
   const handleTopUp = () => {
     const amount = parseInt(topUpAmount);
-    if (!amount || amount < 100) {
-      alert("Minimum 100 Ft-ot kell feltöltened!");
-      return;
-    }
-    navigate("/upload-money", { 
-      state: { 
-        amount,
-        refreshTrigger: Date.now() // biztosítja a frissítést visszafelé
-      } 
-    });
+    if (!amount || amount < 100) { alert("Minimum 100 Ft!"); return; }
+    navigate("/upload-money", { state: { amount } });
   };
 
   const tradeOffers = [
     { id: 1, from: "Kata123", bookOffered: "Dűne", bookRequested: "A Gyűrűk Ura", date: "2025.11.20", status: "pending" },
-    { id: 2, from: "PetiKönyvFan", bookOffered: "Az éhezők viadala", bookRequested: "1984", date: "2025.11.18", status: "pending" },
+    { id: 2, from: "PetiKönyvFan", bookOffered: "Az éhezőueled viadala", bookRequested: "1984", date: "2025.11.18", status: "pending" },
     { id: 3, from: "OlvasóMánia", bookOffered: "A Da Vinci-kód", bookRequested: "Az alkimista", date: "2025.11.15", status: "accepted" }
   ];
 
   return (
     <div className="profilesite-wrapper">
-
       <div className="background-slider">
         {images.map((img, index) => (
-          <div
-            key={index}
-            className={`background-image ${index === currentIndex ? 'active' : ''}`}
-            style={{ backgroundImage: `url(${img})` }}
-          />
+          <div key={index} className={`background-image ${index === currentIndex ? 'active' : ''}`} style={{ backgroundImage: `url(${img})` }} />
         ))}
       </div>
-
+        
       <button onClick={() => navigate('/')} className="fixed-back-btn">
-        <ArrowLeft size={26} /> Vissza a főoldalra
+        <ArrowLeft size={26} /> Vissza
       </button>
 
       <div className="profile-container">
         <div className="profile-card">
-
           <div className="profile-avatar">
             <img src={avatar} alt="Profilkép" className="profile-avatar-img" />
           </div>
-
           <h1 className="profile-username">{username}</h1>
           <p className="profile-fullname">{fullName}</p>
-
           <div className="profile-balance">
             <Wallet size={22} />
             <span className="balance-amount">{balance.toLocaleString()} Ft</span>
@@ -244,30 +198,17 @@ export default function ProfileSite() {
               <button onClick={() => setShowTopUp(!showTopUp)} className="profile-btn primary">
                 <Wallet size={20} /> Egyenleg feltöltés
               </button>
-
               {showTopUp && (
-                <div onClick={(e) => e.stopPropagation()} className="topup-dropdown">
+                <div onClick={(e) => e.stopPropagation()} className="topup-dropdown">
                   <div className="topup-content">
-                    <button onClick={() => setShowTopUp(false)} className="topup-close">
-                      <X size={22} />
-                    </button>
+                    <button onClick={() => setShowTopUp(false)} className="topup-close"><X size={22} /></button>
                     <h3>Egyenleg feltöltés</h3>
-                    <input 
-                      type="number"
-                      placeholder="Összeg (Ft)"
-                      value={topUpAmount}
-                      onChange={(e) => setTopUpAmount(e.target.value)}
-                      className="topup-input"
-                      min="100"
-                    />
-                    <button onClick={handleTopUp} className="topup-pay-btn">
-                      Tovább a fizetéshez
-                    </button>
+                    <input type="number" placeholder="Összeg (Ft)" value={topUpAmount} onChange={(e) => setTopUpAmount(e.target.value)} className="topup-input" min="100" />
+                    <button onClick={handleTopUp} className="topup-pay-btn">Tovább a fizetéshez</button>
                   </div>
                 </div>
               )}
             </div>
-
             <button onClick={() => navigate('/konyv-feltoltes')} className="profile-btn secondary">
               <Upload size={20} /> Könyv feltöltés
             </button>
@@ -275,7 +216,6 @@ export default function ProfileSite() {
 
           <div className="profile-books-section">
             <h2 className="books-title">Könyveim</h2>
-
             <div className="books-tabs">
               <button className={`tab-btn ${activeTab === 'private' ? 'active' : ''}`} onClick={() => setActiveTab('private')}>
                 <EyeOff size={18} /> Privát könyveim
@@ -289,9 +229,7 @@ export default function ProfileSite() {
               {loading && <div className="empty-books"><p>Betöltés...</p></div>}
               {error && <div className="empty-books" style={{color: '#ff6b6b'}}><p><strong>Hiba:</strong> {error}</p></div>}
               {!loading && !error && userBooks.length === 0 && (
-                <div className="empty-books" style={{fontSize: '18px', color: '#999', fontStyle: 'italic', padding: '60px 20px', textAlign: 'center'}}>
-                  <p>{activeTab === 'private' ? 'Nem rendelkezik privát könyvekkel!' : 'Nem rendelkezik publikus könyvekkel!'}</p>
-                </div>
+                <div className="empty-books"><p>{activeTab === 'private' ? 'Nincs privát könyved!' : 'Nincs publikus könyved!'}</p></div>
               )}
 
               {!loading && !error && userBooks.length > 0 && (
@@ -299,26 +237,34 @@ export default function ProfileSite() {
                   {userBooks.map(book => (
                     <div key={book.id} className="book-item">
                       <div className="book-cover">
-                        <img 
-                          src={book.coverImage} 
-                          alt={book.title}
-                          style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'12px'}}
-                          onError={(e) => e.target.src = '/placeholder-book.jpg'}
-                        />
+                        <img src={book.coverImage} alt={book.title} onError={(e) => e.target.src = '/placeholder-book.jpg'} />
                       </div>
-                      <div className="book-info">
-                        <h3 className="book-title">{book.title}</h3>
-                        <p className="book-author">{book.author}</p>
-                        <p className="book-year">{book.year} • {book.price} Ft</p>
-                        <button
-                          className={`visibility-btn ${book.isPublic ? 'private' : 'public'}`}
-                          onClick={() => toggleVisibility(book.id, book.isPublic)}
-                        >
-                          {book.isPublic 
-                            ? <>Priváttá tétel <EyeOff size={16}/></>
-                            : <>Publikussá tétel <Eye size={16}/></>
-                          }
-                        </button>
+
+                      <div className="book-info-container">
+                        <div className="book-details">
+                          <div className="book-info-row"><strong>Cím:</strong> {book.title}</div>
+                          <div className="book-info-row"><strong>Szerző:</strong> {book.author}</div>
+                          <div className="book-info-row"><strong>Év:</strong> {book.year}</div>
+                          <div className="book-info-row book-price"><strong>Ár:</strong> {book.price.toLocaleString()} Ft</div>
+                        </div>
+
+                        <div className="book-actions">
+                          <button
+                            className={`visibility-btn ${book.isPublic ? 'private' : 'public'}`}
+                            onClick={() => toggleVisibility(book.id, book.isPublic)}
+                          >
+                            {book.isPublic ? (
+                              <>Priváttá tétel <EyeOff size={16} style={{ marginLeft: '8px' }} /></>
+                            ) : (
+                              <>Publikussá tétel <Eye size={16} style={{ marginLeft: '8px' }} /></>
+                            )}
+                          </button>
+
+                          {/* TÖRLÉS GOMB – MOST MÁR MŰKÖDIK! */}
+                          <button className="delete-btn" onClick={() => deleteBook(book.id)}>
+                            Tétel törlése
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -329,6 +275,7 @@ export default function ProfileSite() {
         </div>
       </div>
 
+      {/* CSERE AJÁNLATOK */}
       <div className="messages-button-container">
         <button onClick={() => setShowOffers(!showOffers)} className="messages-button">
           <MessageCircle size={28} />
@@ -365,6 +312,9 @@ export default function ProfileSite() {
           </div>
         )}
       </div>
+      <footer className="mainsite-footer">
+        <p>© 2025 GitPush-F • Minden jog fenntartva</p>
+      </footer>
     </div>
   );
 }

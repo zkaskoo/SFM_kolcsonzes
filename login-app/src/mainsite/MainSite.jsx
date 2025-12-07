@@ -28,7 +28,7 @@ export default function MainSite() {
   };
 
   const subtitles = [
-    "Rengeteg könyv és e-book.",
+    "Böngésszen rengeteg könyv között",
     "Szerezzen könyveket online, bárhonnan, bármikor",
     "Cseréljen másokkal, kövesse nyilvántartását.",
     "Modern, gyors, biztonságos."
@@ -61,7 +61,7 @@ export default function MainSite() {
         <div className="topbar-container">
           <div className="topbar-logo">
             <BookOpen size={32} />
-            <h2>SFM Könyvkölcsönzési <span className="highlight">Rendszer</span></h2>
+            <h2>SFM Könyvportál Rendszer</h2>
           </div>
 
           <nav className="topbar-buttons">

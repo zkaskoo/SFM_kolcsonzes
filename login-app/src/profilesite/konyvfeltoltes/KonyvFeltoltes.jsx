@@ -9,7 +9,6 @@ import {
   Image as ImageIcon,
   BookOpen,
   Calendar,
-  DollarSign,
   FileText
 } from 'lucide-react';
 import './KonyvFeltoltes.css';
@@ -144,7 +143,7 @@ export default function KonyvFeltoltes() {
           />
         ))}
       </div>
-
+      
       {/* VISSZA GOMB */}
       <button onClick={() => navigate('/profile')} className="fixed-back-btn">
         <ArrowLeft size={26} />
@@ -269,6 +268,9 @@ export default function KonyvFeltoltes() {
 
         </div>
       </div>
+      <footer className="mainsite-footer">
+        <p>© 2025 GitPush-F • Minden jog fenntartva</p>
+      </footer>
     </div>
   );
 }

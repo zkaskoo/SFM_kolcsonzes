@@ -1,7 +1,16 @@
-// src/App.jsx – TÖKÉLETES, HIBAMENTES VERZIÓ (teljes név megjelenik a profilban!)
+// src/App.jsx – TELJES, VÉGLEGES, HÁTTÉRKÉPEK PONT ÚGY VÁLTAKOZNAK, MINT A FŐOLDALON!
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
+
+// HÁTTÉRKÉPEK IMPORTJA – ugyanazok, mint a főoldalon
+import bg1 from './mainsite/fooldalkep1.png';
+import bg2 from './mainsite/fooldalkep2.png';
+import bg3 from './mainsite/fooldalkep3.jpg';
+import bg4 from './mainsite/fooldalkep4.jpg';
+
+const backgrounds = [bg1, bg2, bg3, bg4];
 
 function App() {
   const [email, setEmail] = useState('');
@@ -27,8 +36,19 @@ function App() {
   const [suggestedPassword, setSuggestedPassword] = useState('');
   const [loadingPassword, setLoadingPassword] = useState(false);
 
+  // HÁTTÉRKÉP VÁLTÁS
+  const [currentBgIndex, setCurrentBgIndex] = useState(0);
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  // HÁTTÉRKÉP VÁLTÁS – 5 MÁSODPERCENKÉNT
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBgIndex((prev) => (prev + 1) % backgrounds.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // URL alapján nézetváltás
   useEffect(() => {
@@ -87,18 +107,6 @@ function App() {
     setError('');
     setSuccessMessage('');
 
-    if (!name || !username || !email || !password || !confirmPassword) {
-      setError('Kérlek töltsd ki az összes mezőt');
-      return;
-    }
-    if (password.length < 6) {
-      setError('A jelszónak legalább 6 karakternek kell lennie');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('A jelszavak nem egyeznek');
-      return;
-    }
 
     try {
       const response = await fetch('http://localhost:8080/api/v1/register', {
@@ -166,9 +174,7 @@ function App() {
         return;
       }
 
-      // EZ A SOR MENTI EL A TELJES NEVET – MINDEN ESETRE BIZTOSÍTVA!
       localStorage.setItem("fullName", data.name || data.fullName || data.username || email.split('@')[0]);
-
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("username", data.name || data.username || email);
       localStorage.setItem("email", email);
@@ -228,9 +234,7 @@ function App() {
   // Átirányítás bejelentkezés után
   useEffect(() => {
     if (isLoggedIn) {
-      const timer = setTimeout(() => {
-        navigate('/');
-      }, 2000);
+      const timer = setTimeout(() => navigate('/'), 2000);
       return () => clearTimeout(timer);
     }
   }, [isLoggedIn]);
@@ -239,6 +243,17 @@ function App() {
   if (isLoggedIn) {
     return (
       <div className="app">
+        {/* HÁTTÉRKÉPEK – PONT ÚGY, MINT A FŐOLDALON */}
+        <div className="background-slider">
+          {backgrounds.map((bg, index) => (
+            <div
+              key={index}
+              className={`background-image ${index === currentBgIndex ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${bg})` }}
+            />
+          ))}
+        </div>
+
         <div className="welcome-container">
           <h1>Üdvözöllek!</h1>
           <p>Sikeresen bejelentkeztél: <strong>{email}</strong></p>
@@ -248,91 +263,96 @@ function App() {
     );
   }
 
-  // REGISZTRÁCIÓ
-  if (isCreateAccount) {
-    return (
-      <div className="app">
-        <div className="login-container">
-          <div className="login-header">
-            <h1>Regisztráció</h1>
-            <p>Hozzon létre új fiókot</p>
-          </div>
-          {successMessage && <div className="success-message">{successMessage}</div>}
-
-          <form onSubmit={handleCreateAccount} className="login-form">
-            <div className="form-group">
-              <label>Név</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Teljes neve" className="form-input" />
-            </div>
-            <div className="form-group">
-              <label>Felhasználónév</label>
-              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Válasszon felhasználónevet" className="form-input" />
-            </div>
-            <div className="form-group">
-              <label>Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@pelda.hu" className="form-input" />
-            </div>
-            <div className="form-group">
-              <label>Jelszó</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onFocus={handlePasswordFocus} placeholder="Minimum 8 karakter" className="form-input" />
-              {showSuggestion && (
-                <div className="password-suggestion-compact">
-                  <div className="suggestion-header">
-                    <span>Jelszó javaslat</span>
-                    <button type="button" onClick={generatePassword} disabled={loadingPassword} className="refresh-btn-small">Új</button>
-                  </div>
-                  {suggestedPassword ? (
-                    <div className="suggested-password-line" onClick={useSuggestedPassword}>
-                      <code>{suggestedPassword}</code>
-                    </div>
-                  ) : (
-                    <div className="loading-small">Generálás...</div>
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="form-group">
-              <label>Jelszó megerősítése</label>
-              <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Írja be újra" className="form-input" />
-            </div>
-            {error && <div className="error-message">{error}</div>}
-            <button type="submit" className="login-btn">Fiók létrehozása</button>
-          </form>
-          <div className="login-footer">
-            <a href="/" onClick={goToMain} className="footer-link">Vissza a főoldalra</a>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // BEJELENTKEZÉS + 2FA MODAL
+  // MINDEN EGYÉB ÁLLAPOT (login, register, forgot)
   return (
     <div className="app">
+      {/* HÁTTÉRKÉPEK – PONT ÚGY, MINT A FŐOLDALON */}
+      <div className="background-slider">
+        {backgrounds.map((bg, index) => (
+          <div
+            key={index}
+            className={`background-image ${index === currentBgIndex ? 'active' : ''}`}
+            style={{ backgroundImage: `url(${bg})` }}
+          />
+        ))}
+      </div>
+
       <div className="login-container">
         <div className="login-header">
-          <h1>Üdvözöljük újra!</h1>
-          <p>Jelentkezzen be a fiókjába</p>
+          <h1>{isCreateAccount ? 'Regisztráció' : 'Üdvözöljük újra!'}</h1>
+          <p>{isCreateAccount ? 'Hozzon létre új fiókot' : 'Jelentkezzen be a fiókjába'}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="login-form">
+        {successMessage && <div className="success-message">{successMessage}</div>}
+
+        <form onSubmit={isCreateAccount ? handleCreateAccount : handleSubmit} className="login-form">
+          {isCreateAccount && (
+            <>
+              <div className="form-group">
+                <label>Név</label>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Teljes neve" className="form-input" />
+              </div>
+              <div className="form-group">
+                <label>Felhasználónév</label>
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Válasszon felhasználónevet" className="form-input" />
+              </div>
+            </>
+          )}
+
           <div className="form-group">
             <label>Email</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@pelda.hu" className="form-input" autoFocus />
           </div>
+
           <div className="form-group">
             <label>Jelszó</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Adja meg a jelszavát" className="form-input" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onFocus={isCreateAccount ? handlePasswordFocus : undefined}
+              placeholder={isCreateAccount ? "Minimum 8 karakter" : "Adja meg a jelszavát"}
+              className="form-input"
+            />
+            {isCreateAccount && showSuggestion && (
+              <div className="password-suggestion-compact">
+                <div className="suggestion-header">
+                  <span>Jelszó javaslat</span>
+                  <button type="button" onClick={generatePassword} disabled={loadingPassword} className="refresh-btn-small">Új</button>
+                </div>
+                {suggestedPassword ? (
+                  <div className="suggested-password-line" onClick={useSuggestedPassword}>
+                    <code>{suggestedPassword}</code>
+                  </div>
+                ) : (
+                  <div className="loading-small">Generálás...</div>
+                )}
+              </div>
+            )}
           </div>
+
+          {isCreateAccount && (
+            <div className="form-group">
+              <label>Jelszó megerősítése</label>
+              <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Írja be újra" className="form-input" />
+            </div>
+          )}
+
           {error && <div className="error-message">{error}</div>}
-          <button type="submit" className="login-btn">Bejelentkezés</button>
+          <button type="submit" className="login-btn">
+            {isCreateAccount ? 'Fiók létrehozása' : 'Bejelentkezés'}
+          </button>
         </form>
 
         <div className="login-footer">
-          <a href="/forgotten-password" onClick={(e) => { e.preventDefault(); navigate('/forgotten-password'); }} className="footer-link">
-            Elfelejtette a jelszavát?
-          </a>
-          <span className="footer-divider">•</span>
+          {!isCreateAccount && (
+            <>
+              <a href="/forgotten-password" onClick={(e) => { e.preventDefault(); navigate('/forgotten-password'); }} className="footer-link">
+                Elfelejtette a jelszavát?
+              </a>
+              <span className="footer-divider">•</span>
+            </>
+          )}
           <a href="/" onClick={goToMain} className="footer-link">Vissza a főoldalra</a>
         </div>
       </div>

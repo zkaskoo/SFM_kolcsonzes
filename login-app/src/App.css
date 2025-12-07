@@ -1,18 +1,52 @@
+/* src/App.css – TELJES, VÉGLEGES, HÁTTÉRKÉPEK VÁLTAKOZNAK PONT ÚGY, MINT A FŐOLDALON! */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* --------------------- HÁTTÉRKÉPEK – PONT ÚGY, MINT A MAINSITE.CSS --------------------- */
+.background-slider {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+}
+
+.background-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 2.2s ease-in-out;
+}
+
+.background-image.active {
+  opacity: 1;
+}
+
+.background-slider::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.40);
+  z-index: -1;
+}
+
+/* --------------------- APP – CSAK A TARTALOM KÖZÉPRE --------------------- */
 .app {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
+  position: relative;
+  z-index: 1;
 }
 
+/* --------------------- BEJELENTKEZŐ/REGISZTRÁCIÓ DOBOZ --------------------- */
 .login-container {
   background: white;
   border-radius: 20px;
@@ -21,6 +55,10 @@
   max-width: 420px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideIn 0.5s ease-out;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 2;
 }
 
 @keyframes slideIn {
@@ -71,7 +109,7 @@
 }
 
 .form-input {
-  padding: 14px 16px;
+  padding: 14px 16px !important;
   border: 2px solid #e0e0e0;
   border-radius: 10px;
   font-size: 16px;
@@ -89,8 +127,8 @@
 }
 
 .error-message {
-  color: #e74.3c;
-  background: #fee;
+  color: #e74c3c;
+  background: #fdf2f2;
   padding: 12px;
   border-radius: 8px;
   font-size: 14px;
@@ -157,6 +195,7 @@
   color: #ccc;
 }
 
+/* --------------------- ÜDVÖZLŐ KÉPERNYŐ BEJELENTKEZÉS UTÁN --------------------- */
 .welcome-container {
   background: white;
   border-radius: 20px;
@@ -166,6 +205,10 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   text-align: center;
   animation: slideIn 0.5s ease-out;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 2;
 }
 
 .welcome-container h1 {
@@ -203,18 +246,17 @@
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* 2FA Modal */
+/* --------------------- 2FA MODAL --------------------- */
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .twofa-panel {
@@ -243,9 +285,15 @@
   letter-spacing: 8px;
 }
 
-.twofa-panel button {
-  width: 100%;
-  padding: 0.9rem;
+.twofa-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.verify-btn {
+  flex: 1;
+  padding: 14px;
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
   border: none;
@@ -253,146 +301,25 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.twofa-panel button:hover {
+.verify-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102,126,234,0.4);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* JELSZÓ JAVASLATOK – TELJESEN ÚJ, SZÉP ÉS MODERN */
-.password-suggestions {
-  margin-top: 16px;
-  padding: 18px;
-  background: #f8f9ff;
-  border: 1px solid #e0e7ff;
-  border-radius: 14px;
-  animation: slideDown 0.4s ease-out;
+.verify-btn.cancel {
+  background: linear-gradient(135deg, #7c62ea, #8a5fc7);
+  opacity: 0.9;
 }
 
-.suggestions-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-  font-weight: 600;
-  color: #667eea;
-  font-size: 15px;
+.verify-btn.cancel:hover {
+  opacity: 1;
+  box-shadow: 0 8px 20px rgba(124, 98, 234, 0.4);
 }
 
-.refresh-btn {
-  background: none;
-  border: 1.5px solid #667eea;
-  color: #667eea;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.refresh-btn:hover:not(:disabled) {
-  background: #667eea;
-  color: white;
-  transform: translateY(-1px);
-}
-
-.refresh-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.suggestions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.suggested-item {
-  padding: 14px 16px;
-  background: white;
-  border: 1.5px solid #e0e7ff;
-  border-radius: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  user-select: none;
-}
-
-.suggested-item:hover {
-  background: #eef2ff;
-  border-color: #667eea;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
-}
-
-.suggested-item code {
-  font-family: 'Courier New', monospace;
-  font-size: 15px;
-  font-weight: 600;
-  color: #333;
-  letter-spacing: 0.8px;
-}
-
-.use-btn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-.use-btn:hover {
-  transform: scale(1.05);
-}
-
-.loading-text {
-  color: #999;
-  font-style: italic;
-  text-align: center;
-  padding: 12px;
-  font-size: 14px;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsív */
-@media (max-width: 480px) {
-  .login-container,
-  .welcome-container {
-    padding: 30px 20px;
-    margin: 10px;
-  }
-
-  .login-header h1,
-  .welcome-container h1 {
-    font-size: 28px;
-  }
-
-  .password-suggestions {
-    padding: 14px;
-  }
-
-  .suggested-item code {
-    font-size: 14px;
-  }
-}
-
-/* Kicsi, elegáns jelszó javaslat – nincs gomb, csak egy sor */
+/* --------------------- JELSZÓ JAVASLATOK – KOMPAKT VERZIÓ --------------------- */
 .password-suggestion-compact {
   margin-top: 12px;
   padding: 12px 14px;
@@ -467,55 +394,21 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 2FA – SZÉP LILA GOMBOK MINDKETTŐ */
-.twofa-buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
+/* --------------------- RESPONSIVE --------------------- */
+@media (max-width: 480px) {
+  .login-container,
+  .welcome-container {
+    padding: 30px 20px;
+    margin: 10px;
+  }
+
+  .login-header h1,
+  .welcome-container h1 {
+    font-size: 28px;
+  }
 }
 
-.verify-btn {
-  flex: 1;
-  padding: 14px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.verify-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
-/* Mégse gomb – ugyanaz a szín, csak egy árnyalattal világosabb + átlátszóság */
-.verify-btn.cancel {
-  background: linear-gradient(135deg, #7c62ea, #8a5fc7);
-  opacity: 0.9;
-}
-
-.verify-btn.cancel:hover {
-  opacity: 1;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(124, 98, 234, 0.4);
-}
-
-/* Overlay kattintásra zárás */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
-}
-
+/* ANIMÁCIÓK */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
