@@ -176,7 +176,7 @@ function App() {
 
       localStorage.setItem("fullName", data.name || data.fullName || data.username || email.split('@')[0]);
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("username", data.name || data.username || email);
+      localStorage.setItem("username", data.username || email);
       localStorage.setItem("email", email);
       localStorage.setItem("token", data.token);
       if (data.id) {
