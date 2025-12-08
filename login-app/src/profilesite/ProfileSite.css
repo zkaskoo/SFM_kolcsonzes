@@ -246,7 +246,6 @@
   border-radius: 16px;
   font-size: 18px;
   text-align: center;
-  margin-bottom: 20px;
 }
 
 .topup-input:focus {
@@ -261,6 +260,7 @@
   background: #667eea;
   color: white;
   border: none;
+  margin-top: 20px;
   border-radius: 16px;
   font-size: 18px;
   font-weight: 600;
