@@ -23,7 +23,7 @@ public class UploadMoneyService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nincs az email regisztrálva");
         }
 
-        if (cardNumber.length() < 19){
+        if (cardNumber.length() < 16){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nem megfelelő a kártyaszám");
         }
 
