@@ -214,8 +214,8 @@
   transform: scale(0.96);
 }
 
-/* ======= GLOBAL INPUT FIX ======= */
-input {
+/* ======= SCOPED INPUT FIX FOR UPLOAD MONEY ======= */
+.upload-money-wrapper input {
   padding: 0 !important;
   margin: 0 !important;
   -webkit-appearance: none;
