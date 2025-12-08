@@ -55,9 +55,9 @@
 .topup-close { position: absolute; top: 16px; right: 16px; background: #f1f5f9; border: none; color: #64748b; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .topup-close:hover { background: #e2e8f0; color: #1e293b; }
 .topup-content h3 { margin: 0 0 28px 0; font-size: 24px; font-weight: 700; color: #1e293b; }
-.topup-input { width: 100%; padding: 16px 20px !important; border: 2px solid #e2e8f0; border-radius: 16px; font-size: 18px; text-align: center; margin-bottom: 20px !important; }
+.topup-input { width: 100%; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 16px; font-size: 18px; text-align: center; }
 .topup-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 4px rgba(102,126,234,0.15); }
-.topup-pay-btn { width: 100%; padding: 16px; background: #667eea; color: white; border: none; border-radius: 16px; font-size: 18px; font-weight: 600; cursor: pointer; }
+.topup-pay-btn { width: 100%; padding: 16px; background: #667eea; color: white; border: none; margin-top:20px; border-radius: 16px; font-size: 18px; font-weight: 600; cursor: pointer; }
 .topup-pay-btn:hover { background: #5a67d8; transform: translateY(-2px); }
 
 .profile-books-section { margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.3); }
