@@ -1,7 +1,7 @@
-// src/profilesite/ProfileSite.jsx – TELJES, CSAK A CSERE AJÁNLATOKNÁL VAN ELFOGADÁS/ELUTASÍTÁS!
+// src/profilesite/ProfileSite.jsx – TELJES, VÉGLEGES, SZINTAKTIKAILAG HELYES!
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Upload, Wallet, 
   MessageCircle, X, User, Calendar, Eye, EyeOff 
@@ -18,10 +18,9 @@ const images = [kep1, kep2, kep3, kep4];
 
 export default function ProfileSite() {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  const username = localStorage.getItem('username');
+  const username = localStorage.getItem('username') || "Felhasználó";
   const fullName = localStorage.getItem('fullName');
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
@@ -32,12 +31,18 @@ export default function ProfileSite() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('private');
   const [showOffers, setShowOffers] = useState(false);
+  const [offerTab, setOfferTab] = useState('incoming');
   const [showTopUp, setShowTopUp] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // CSERE AJÁNLATOK
+  const [incomingOffers, setIncomingOffers] = useState([]);
+  const [outgoingOffers, setOutgoingOffers] = useState([]);
+  const [loadingOffers, setLoadingOffers] = useState(false);
+
   useEffect(() => {
-    document.title = "SFM Könyvportál";
+    document.title = "Profilom • SFM Könyvportál";
   }, []);
 
   useEffect(() => {
@@ -58,7 +63,6 @@ export default function ProfileSite() {
       if (res.ok) {
         const data = await res.json();
         setBalance(Math.round(data.money || 0));
-        localStorage.setItem('balance', Math.round(data.money || 0).toString());
       }
     } catch (err) { console.error(err); }
   };
@@ -78,12 +82,7 @@ export default function ProfileSite() {
   };
 
   const deleteBook = async (bookId) => {
-    if (!bookId) {
-      alert("Hiba: hiányzó könyv ID!");
-      return;
-    }
-
-    if (!confirm("Biztosan törölni szeretnéd ezt a könyvet? Ez végleges!")) return;
+    if (!bookId || !confirm("Biztosan törölni szeretnéd ezt a könyvet? Ez végleges!")) return;
 
     try {
       const response = await fetch('http://localhost:8080/api/v1/books/delete', {
@@ -99,12 +98,9 @@ export default function ProfileSite() {
         alert("Könyv sikeresen törölve!");
         fetchBooks(activeTab);
       } else {
-        const errorText = await response.text();
-        console.error("Törlési hiba:", response.status, errorText);
         alert("Hiba történt a törlés során.");
       }
     } catch (err) {
-      console.error("Hálózati hiba a törlésnél:", err);
       alert("Nem sikerült kapcsolódni a szerverhez.");
     }
   };
@@ -165,23 +161,67 @@ export default function ProfileSite() {
     navigate("/upload-money", { state: { amount } });
   };
 
-  // CSERE AJÁNLATOK – ELFOGADÁS ÉS ELUTASÍTÁS GOMBOKKAL!
-  const tradeOffers = [
-    { id: 1, from: "Kata123", bookOffered: "Dűne", bookRequested: "A Gyűrűk Ura", date: "2025.11.20", status: "pending" },
-    { id: 2, from: "PetiKönyvFan", bookOffered: "Az éhezők viadala", bookRequested: "1984", date: "2025.11.18", status: "pending" },
-    { id: 3, from: "OlvasóMánia", bookOffered: "A Da Vinci-kód", bookRequested: "Az alkimista", date: "2025.11.15", status: "accepted" },
-  ];
+  // CSERE AJÁNLATOK LEKÉRÉSE
+  const fetchTradeOffers = async () => {
+    if (!token) return;
+    setLoadingOffers(true);
 
-  const handleAccept = (offerId) => {
-    alert(`Elfogadtad az ajánlatot! (ID: ${offerId})`);
-    // TODO: backend hívás
+    try {
+      const [incRes, outRes] = await Promise.all([
+        fetch('http://localhost:8080/api/v1/trade/incoming', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('http://localhost:8080/api/v1/trade/outgoing', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ]);
+
+      if (incRes.ok) setIncomingOffers(await incRes.json());
+      if (outRes.ok) setOutgoingOffers(await outRes.json());
+    } catch (err) {
+      console.error("Ajánlatok betöltése sikertelen:", err);
+    } finally {
+      setLoadingOffers(false);
+    }
   };
 
-  const handleDecline = (offerId) => {
-    if (confirm("Biztosan elutasítod ezt az ajánlatot?")) {
-      alert(`Elutasítottad az ajánlatot! (ID: ${offerId})`);
-      // TODO: backend hívás
+  const handleAccept = async (offerId) => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/trade/accept/${offerId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        alert("Csere elfogadva! A könyv most már a tiéd!");
+        fetchTradeOffers();
+        fetchBooks(activeTab);
+      } else {
+        alert("Hiba történt az elfogadáskor");
+      }
+    } catch {
+      alert("Nem sikerült elfogadni");
     }
+  };
+
+  const handleDecline = async (offerId) => {
+    if (!confirm("Biztosan elutasítod ezt az ajánlatot?")) return;
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/trade/decline/${offerId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        alert("Ajánlat elutasítva");
+        fetchTradeOffers();
+      }
+    } catch {
+      alert("Nem sikerült elutasítani");
+    }
+  };
+
+  const openOffers = () => {
+    setShowOffers(true);
+    fetchTradeOffers();
   };
 
   return (
@@ -191,7 +231,7 @@ export default function ProfileSite() {
           <div key={index} className={`background-image ${index === currentIndex ? 'active' : ''}`} style={{ backgroundImage: `url(${img})` }} />
         ))}
       </div>
-        
+
       <button onClick={() => navigate('/')} className="fixed-back-btn">
         <ArrowLeft size={26} /> Vissza
       </button>
@@ -232,10 +272,10 @@ export default function ProfileSite() {
           <div className="profile-books-section">
             <h2 className="books-title">Könyveim</h2>
             <div className="books-tabs">
-              <button className={`tab-btn ${activeTab === 'private' ? 'active' : ''}`} onClick={() => setActiveTab('private')}>
+              <button className={`books-tab-btn ${activeTab === 'private' ? 'active' : ''}`} onClick={() => setActiveTab('private')}>
                 <EyeOff size={18} /> Privát könyveim
               </button>
-              <button className={`tab-btn ${activeTab === 'public' ? 'active' : ''}`} onClick={() => setActiveTab('public')}>
+              <button className={`books-tab-btn ${activeTab === 'public' ? 'active' : ''}`} onClick={() => setActiveTab('public')}>
                 <Eye size={18} /> Publikus könyveim
               </button>
             </div>
@@ -289,33 +329,65 @@ export default function ProfileSite() {
         </div>
       </div>
 
-      {/* CSERE AJÁNLATOK – ELFOGADÁS ÉS ELUTASÍTÁS GOMBOKKAL! */}
+      {/* CSERE AJÁNLATOK – KÜLÖN FÜL STÍLUSSAL */}
       <div className="messages-button-container">
-        <button onClick={() => setShowOffers(!showOffers)} className="messages-button">
+        <button onClick={openOffers} className="messages-button">
           <MessageCircle size={28} />
-          {tradeOffers.length > 0 && <span className="messages-badge">{tradeOffers.length}</span>}
+          {(incomingOffers.length + outgoingOffers.length) > 0 && 
+            <span className="messages-badge">{incomingOffers.length + outgoingOffers.length}</span>
+          }
         </button>
 
         {showOffers && (
           <div className="trade-offers-dropdown">
             <div className="trade-offers-header">
-              <h3>Bejövő csereajánlatok</h3>
+              <h3>Csereajánlatok</h3>
               <button onClick={() => setShowOffers(false)} className="close-offers">
                 <X size={20} />
               </button>
             </div>
+
+            {/* KÜLÖN FÜLEK */}
+            <div className="offer-tabs">
+              <button 
+                className={`offer-tab-btn ${offerTab === 'incoming' ? 'offer-tab-active' : 'offer-tab-passive'}`}
+                onClick={() => setOfferTab('incoming')}
+              >
+                Bejövő ({incomingOffers.length})
+              </button>
+              <button 
+                className={`offer-tab-btn ${offerTab === 'outgoing' ? 'offer-tab-active' : 'offer-tab-passive'}`}
+                onClick={() => setOfferTab('outgoing')}
+              >
+                Kimenő ({outgoingOffers.length})
+              </button>
+            </div>
+
             <div className="trade-offers-list">
-              {tradeOffers.map(offer => (
-                <div key={offer.id} className="trade-offer-item">
-                  <div className="offer-from">
-                    <User size={18} /><strong>{offer.from}</strong>
-                  </div>
-                  <div className="offer-details">
-                    <p><strong>{offer.bookOffered}</strong> → <strong>{offer.bookRequested}</strong></p>
-                    <small><Calendar size={14} /> {offer.date}</small>
-                  </div>
-                  <div className="offer-status">
-                    {offer.status === 'pending' ? (
+              {loadingOffers ? (
+                <p className="empty-text">Betöltés...</p>
+              ) : offerTab === 'incoming' && incomingOffers.length === 0 ? (
+                <p className="empty-text">Nincs bejövő ajánlatod</p>
+              ) : offerTab === 'outgoing' && outgoingOffers.length === 0 ? (
+                <p className="empty-text">Nincs kimenő ajánlatod</p>
+              ) : (
+                (offerTab === 'incoming' ? incomingOffers : outgoingOffers).map(offer => (
+                  <div key={offer.id} className="trade-offer-item">
+                    <div className="offer-header">
+                      <div className="offer-from">
+                        <User size={18} />
+                        <strong>{offer.from}</strong>
+                      </div>
+                      <small><Calendar size={14} /> {offer.date}</small>
+                    </div>
+
+                    <div className="offer-books">
+                      <p>
+                        <strong>{offer.bookOffered}</strong> → <strong>{offer.bookRequested}</strong>
+                      </p>
+                    </div>
+
+                    {offerTab === 'incoming' && offer.status === 'pending' ? (
                       <div className="offer-actions">
                         <button onClick={() => handleAccept(offer.id)} className="accept-btn">
                           Elfogadás
@@ -325,17 +397,19 @@ export default function ProfileSite() {
                         </button>
                       </div>
                     ) : (
-                      <span className={`status-${offer.status}`}>
-                        {offer.status === 'accepted' ? 'Elfogadva' : 'Elutasítva'}
-                      </span>
+                      <div className={`offer-status offer-status-${offer.status}`}>
+                        {offer.status === 'accepted' ? 'Elfogadva' : 
+                         offer.status === 'declined' ? 'Elutasítva' : 'Függőben'}
+                      </div>
                     )}
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
       </div>
+
       <footer className="mainsite-footer">
         <p>© 2025 GitPush-F • Minden jog fenntartva</p>
       </footer>
