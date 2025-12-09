@@ -164,8 +164,8 @@ export default function Bongeszes() {
 
       setFilteredBooks(safeResults);
     } catch (err) {
-      console.error("Szűrés hiba:", err);
-      setError("Nem sikerült a szűrés – eredeti lista látható.");
+      console.error(" Hiba:", err);
+      setError("Nem sikerült betölteni a könyveket");
       setFilteredBooks(books);
     } finally {
       setLoading(false);
