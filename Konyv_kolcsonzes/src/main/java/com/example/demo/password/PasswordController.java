@@ -7,7 +7,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/password")
 public class PasswordController {
 
-    private final AutomaticPasswordGeneration passwordGenerator = new AutomaticPasswordGeneration();
+    private final AutomaticPasswordGeneration passwordGenerator;
+
+    public PasswordController(AutomaticPasswordGeneration passwordGenerator) {
+        this.passwordGenerator = passwordGenerator;
+    }
 
     @GetMapping("/generate")
     public ResponseEntity<String> generatePassword() {
@@ -15,3 +19,4 @@ public class PasswordController {
         return ResponseEntity.ok(password);
     }
 }
+
