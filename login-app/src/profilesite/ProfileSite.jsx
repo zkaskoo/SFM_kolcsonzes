@@ -1,4 +1,4 @@
-// src/profilesite/ProfileSite.jsx – TELJES, TÖRLÉS MŰKÖDIK!
+// src/profilesite/ProfileSite.jsx – TELJES, CSAK A CSERE AJÁNLATOKNÁL VAN ELFOGADÁS/ELUTASÍTÁS!
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -37,7 +37,7 @@ export default function ProfileSite() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-  document.title = "SFM Könyvportál";
+    document.title = "SFM Könyvportál";
   }, []);
 
   useEffect(() => {
@@ -77,39 +77,37 @@ export default function ProfileSite() {
     } catch (err) { console.error(err); }
   };
 
-  // ÚJ: TÖRLÉS FÜGGVÉNY
-  // TÖRLÉS FÜGGVÉNY – MOST MÁR HELYESEN KÜLDI AZ ID-T!
-const deleteBook = async (bookId) => {
-  if (!bookId) {
-    alert("Hiba: hiányzó könyv ID!");
-    return;
-  }
-
-  if (!confirm("Biztosan törölni szeretnéd ezt a könyvet? Ez végleges!")) return;
-
-  try {
-    const response = await fetch('http://localhost:8080/api/v1/books/delete', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ id: bookId })  // FONTOS: { id: bookId }, nem { bookId }!!!
-    });
-
-    if (response.ok || response.status === 204) {
-      alert("Könyv sikeresen törölve!");
-      fetchBooks(activeTab); // Frissítjük a listát
-    } else {
-      const errorText = await response.text();
-      console.error("Törlési hiba:", response.status, errorText);
-      alert("Hiba történt a törlés során.");
+  const deleteBook = async (bookId) => {
+    if (!bookId) {
+      alert("Hiba: hiányzó könyv ID!");
+      return;
     }
-  } catch (err) {
-    console.error("Hálózati hiba a törlésnél:", err);
-    alert("Nem sikerült kapcsolódni a szerverhez.");
-  }
-};
+
+    if (!confirm("Biztosan törölni szeretnéd ezt a könyvet? Ez végleges!")) return;
+
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/books/delete', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: bookId })
+      });
+
+      if (response.ok || response.status === 204) {
+        alert("Könyv sikeresen törölve!");
+        fetchBooks(activeTab);
+      } else {
+        const errorText = await response.text();
+        console.error("Törlési hiba:", response.status, errorText);
+        alert("Hiba történt a törlés során.");
+      }
+    } catch (err) {
+      console.error("Hálózati hiba a törlésnél:", err);
+      alert("Nem sikerült kapcsolódni a szerverhez.");
+    }
+  };
 
   const fetchBooks = async (type) => {
     if (!token || !userId) { setError('Bejelentkezés szükséges!'); setLoading(false); return; }
@@ -167,11 +165,24 @@ const deleteBook = async (bookId) => {
     navigate("/upload-money", { state: { amount } });
   };
 
+  // CSERE AJÁNLATOK – ELFOGADÁS ÉS ELUTASÍTÁS GOMBOKKAL!
   const tradeOffers = [
     { id: 1, from: "Kata123", bookOffered: "Dűne", bookRequested: "A Gyűrűk Ura", date: "2025.11.20", status: "pending" },
-    { id: 2, from: "PetiKönyvFan", bookOffered: "Az éhezőueled viadala", bookRequested: "1984", date: "2025.11.18", status: "pending" },
-    { id: 3, from: "OlvasóMánia", bookOffered: "A Da Vinci-kód", bookRequested: "Az alkimista", date: "2025.11.15", status: "accepted" }
+    { id: 2, from: "PetiKönyvFan", bookOffered: "Az éhezők viadala", bookRequested: "1984", date: "2025.11.18", status: "pending" },
+    { id: 3, from: "OlvasóMánia", bookOffered: "A Da Vinci-kód", bookRequested: "Az alkimista", date: "2025.11.15", status: "accepted" },
   ];
+
+  const handleAccept = (offerId) => {
+    alert(`Elfogadtad az ajánlatot! (ID: ${offerId})`);
+    // TODO: backend hívás
+  };
+
+  const handleDecline = (offerId) => {
+    if (confirm("Biztosan elutasítod ezt az ajánlatot?")) {
+      alert(`Elutasítottad az ajánlatot! (ID: ${offerId})`);
+      // TODO: backend hívás
+    }
+  };
 
   return (
     <div className="profilesite-wrapper">
@@ -264,7 +275,6 @@ const deleteBook = async (bookId) => {
                             )}
                           </button>
 
-                          {/* TÖRLÉS GOMB – MOST MÁR MŰKÖDIK! */}
                           <button className="delete-btn" onClick={() => deleteBook(book.id)}>
                             Tétel törlése
                           </button>
@@ -279,7 +289,7 @@ const deleteBook = async (bookId) => {
         </div>
       </div>
 
-      {/* CSERE AJÁNLATOK */}
+      {/* CSERE AJÁNLATOK – ELFOGADÁS ÉS ELUTASÍTÁS GOMBOKKAL! */}
       <div className="messages-button-container">
         <button onClick={() => setShowOffers(!showOffers)} className="messages-button">
           <MessageCircle size={28} />
@@ -305,10 +315,20 @@ const deleteBook = async (bookId) => {
                     <small><Calendar size={14} /> {offer.date}</small>
                   </div>
                   <div className="offer-status">
-                    {offer.status === 'pending' 
-                      ? <span className="status-pending">Függőben</span>
-                      : <span className="status-accepted">Elfogadva</span>
-                    }
+                    {offer.status === 'pending' ? (
+                      <div className="offer-actions">
+                        <button onClick={() => handleAccept(offer.id)} className="accept-btn">
+                          Elfogadás
+                        </button>
+                        <button onClick={() => handleDecline(offer.id)} className="decline-btn">
+                          Elutasítás
+                        </button>
+                      </div>
+                    ) : (
+                      <span className={`status-${offer.status}`}>
+                        {offer.status === 'accepted' ? 'Elfogadva' : 'Elutasítva'}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}

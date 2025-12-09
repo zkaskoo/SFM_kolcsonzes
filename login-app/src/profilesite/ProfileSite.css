@@ -1,4 +1,4 @@
-/* src/profilesite/ProfileSite.css – TELJES, VÉGLEGES, GOMBOK PONT OTT, AHOL KELL! */
+/* src/profilesite/ProfileSite.css – TELJES, VÉGLEGES, ELFOGADÁS/ELUTASÍTÁS GOMBOKKAL! */
 
 .fixed-back-btn {
   position: fixed;
@@ -201,25 +201,204 @@
   }
 }
 
-/* CSERE AJÁNLATOK */
-.messages-button-container { position: fixed; bottom: 100px; right: 30px; z-index: 1000; }
-.messages-button { width: 64px; height: 64px; background: white; color: #667eea; border: none; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; position: relative; }
-.messages-button:hover { transform: scale(1.1); }
-.messages-badge { position: absolute; top: -6px; right: -6px; background: #ff4757; color: white; font-size: 12px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+/* CSERE AJÁNLATOK – ELFOGADÁS ÉS ELUTASÍTÁS GOMBOKKAL! */
+.messages-button-container { 
+  position: fixed; 
+  bottom: 100px; 
+  right: 30px; 
+  z-index: 1000; 
+}
+.messages-button { 
+  width: 64px; 
+  height: 64px; 
+  background: white; 
+  color: #667eea; 
+  border: none; 
+  border-radius: 50%; 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  transition: all 0.3s ease; 
+  position: relative; 
+}
+.messages-button:hover { 
+  transform: scale(1.1); 
+}
+.messages-badge { 
+  position: absolute; 
+  top: -6px; 
+  right: -6px; 
+  background: #ff4757; 
+  color: white; 
+  font-size: 12px; 
+  font-weight: bold; 
+  width: 22px; 
+  height: 22px; 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
 
-.trade-offers-dropdown { position: absolute; bottom: 80px; right: 0; width: 380px; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); overflow: hidden; animation: slideUp 0.4s ease; }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.trade-offers-header { padding: 18px 24px; background: #667eea; color: white; display: flex; justify-content: space-between; align-items: center; }
-.trade-offers-header h3 { margin: 0; font-size: 18px; }
-.close-offers { background: none; border: none; color: white; cursor: pointer; }
-.trade-offers-list { max-height: 420px; overflow-y: auto; padding: 12px 0; }
-.trade-offer-item { padding: 16px 24px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 8px; }
-.trade-offer-item:last-child { border-bottom: none; }
-.offer-from { display: flex; align-items: center; gap: 8px; color: #667eea; font-size: 15px; }
-.offer-details p { margin: 0; font-size: 15px; color: #333; }
-.offer-details small { color: #888; display: flex; align-items: center; gap: 4px; }
-.status-pending { background: #ffa502; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-.status-accepted { background: #2ed573; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+.trade-offers-dropdown { 
+  position: absolute; 
+  bottom: 80px; 
+  right: 0; 
+  width: 380px; 
+  background: white; 
+  border-radius: 20px; 
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35); 
+  overflow: hidden; 
+  animation: slideUp 0.4s ease; 
+}
+@keyframes slideUp { 
+  from { transform: translateY(20px); opacity: 0; } 
+  to { transform: translateY(0); opacity: 1; } 
+}
 
-@media (max-width: 768px) { .profile-card { padding: 50px 40px; } .books-tabs { gap: 12px; } .tab-btn { padding: 10px 20px; font-size: 16px; } }
-@media (max-width: 480px) { .profile-username { font-size: 38px; } .profile-card { padding: 40px 25px; } .books-tabs { flex-direction: column; } .tab-btn { justify-content: center; } .trade-offers-dropdown { width: 340px; right: -20px; } .topup-dropdown { width: 92%; left: 50%; transform: translateX(-50%); } }
+.trade-offers-header { 
+  padding: 18px 24px; 
+  background: #667eea; 
+  color: white; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+}
+.trade-offers-header h3 { 
+  margin: 0; 
+  font-size: 18px; 
+}
+.close-offers { 
+  background: none; 
+  border: none; 
+  color: white; 
+  cursor: pointer; 
+}
+
+.trade-offers-list { 
+  max-height: 420px; 
+  overflow-y: auto; 
+  padding: 12px 0; 
+}
+
+.trade-offer-item { 
+  padding: 18px 24px; 
+  border-bottom: 1px solid #eee; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+}
+
+.trade-offer-item:last-child { 
+  border-bottom: none; 
+}
+
+.offer-from { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  color: #667eea; 
+  font-weight: 600; 
+  font-size: 15px; 
+}
+
+.offer-details p { 
+  margin: 0; 
+  font-size: 15px; 
+  color: #333; 
+}
+
+.offer-details small { 
+  color: #888; 
+  display: flex; 
+  align-items: center; 
+  gap: 4px; 
+}
+
+.offer-actions { 
+  display: flex; 
+  gap: 12px; 
+  margin-top: 8px; 
+}
+
+.accept-btn, .decline-btn { 
+  flex: 1; 
+  padding: 10px 16px; 
+  border: none; 
+  border-radius: 12px; 
+  font-size: 14px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  transition: all 0.3s ease; 
+}
+
+.accept-btn { 
+  background: #d4edda; 
+  color: #155724; 
+}
+.accept-btn:hover { 
+  background: #a7f3d0; 
+  transform: translateY(-2px); 
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); 
+}
+
+.decline-btn { 
+  background: #fee2e2; 
+  color: #991b1b; 
+}
+.decline-btn:hover { 
+  background: #fecaca; 
+  transform: translateY(-2px); 
+  box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3); 
+}
+
+.status-accepted { 
+  background: #d4edda; 
+  color: #155724; 
+  padding: 8px 16px; 
+  border-radius: 12px; 
+  font-weight: bold; 
+  text-align: center; 
+}
+
+.status-pending { 
+  background: #fff3cd; 
+  color: #856404; 
+  padding: 8px 16px; 
+  border-radius: 12px; 
+  font-weight: bold; 
+  text-align: center; 
+}
+
+/* Mobil */
+@media (max-width: 480px) {
+  .trade-offers-dropdown { 
+    width: 340px; 
+    right: -20px; 
+  }
+  .offer-actions { 
+    flex-direction: column; 
+  }
+  .accept-btn, .decline-btn { 
+    width: 100%; 
+  }
+}
+
+/* FOOTER */
+.mainsite-footer {
+  padding: 40px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 15px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 968px) {
+  .profile-card { padding: 60px 70px; }
+}
+@media (max-width: 480px) {
+  .profile-username { font-size: 38px; }
+  .profile-card { padding: 40px 25px; }
+}
