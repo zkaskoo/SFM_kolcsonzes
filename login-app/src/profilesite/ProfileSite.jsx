@@ -21,8 +21,8 @@ export default function ProfileSite() {
   const location = useLocation();
 
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  const username = localStorage.getItem('username') || 'Felhasználó';
-  const fullName = localStorage.getItem('fullName') || 'Ismeretlen Névtelen';
+  const username = localStorage.getItem('username');
+  const fullName = localStorage.getItem('fullName');
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
 

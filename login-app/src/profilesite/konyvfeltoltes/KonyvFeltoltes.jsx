@@ -163,7 +163,7 @@ export default function KonyvFeltoltes() {
               ) : (
                 <div className="image-upload-placeholder">
                   <ImageIcon size={48} />
-                  <p>Kattints a borítókép feltöltéséhez</p>
+                  <p>Kattintson a borítókép feltöltéséhez</p>
                 </div>
               )}
             </label>

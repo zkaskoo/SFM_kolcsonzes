@@ -125,7 +125,7 @@ public class BookController {
         }
     }
 
-    @PostMapping("changepublic")
+    @PostMapping("/changepublic")
     public ResponseEntity<Void> makeBookPublic(@RequestBody ChangeBookRequest request) {
 
         Long bookId = request.getBookId();
