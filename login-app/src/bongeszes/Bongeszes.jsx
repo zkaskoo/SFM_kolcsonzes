@@ -248,21 +248,21 @@ export default function Bongeszes() {
               <div className="form-grid">
                 <div className="input-group">
                   <label>Cím</label>
-                  <input type="text" name="title" value={filters.title} onChange={handleFilterChange} onKeyDown={handleKeyDown} placeholder="pl. Harry Potter" />
+                  <input type="text" name="title" value={filters.title} onChange={handleFilterChange} onKeyDown={handleKeyDown} placeholder="Adja meg a könyv címét!" />
                 </div>
                 <div className="input-group">
                   <label>Szerző</label>
-                  <input type="text" name="author" value={filters.author} onChange={handleFilterChange} onKeyDown={handleKeyDown} placeholder="pl. J.K. Rowling" />
+                  <input type="text" name="author" value={filters.author} onChange={handleFilterChange} onKeyDown={handleKeyDown} placeholder="Adja meg a szerzőt!" />
                 </div>
                 <div className="input-group">
-                  <label>Maximum ár (Ft)</label>
+                  <label>Maximális ár (Ft)</label>
                   <input
                     type="text"
                     name="maxPrice"
                     value={filters.maxPrice}
                     onChange={handleFilterChange}
                     onKeyDown={handleKeyDown}
-                    placeholder="pl. 5000"
+                    placeholder="Adja meg a maximális árat!"
                   />
                 </div>
               </div>

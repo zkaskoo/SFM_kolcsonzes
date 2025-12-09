@@ -212,7 +212,7 @@ export default function KonyvFeltoltes() {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Adja meg a könyv címét"
+                    placeholder="Adja meg a könyv címét!"
                   />
                 </div>
 
@@ -223,7 +223,7 @@ export default function KonyvFeltoltes() {
                     required
                     value={formData.author}
                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    placeholder="Adja meg a szerző nevét."
+                    placeholder="Adja meg a szerző nevét!"
                   />
                 </div>
 
@@ -235,7 +235,7 @@ export default function KonyvFeltoltes() {
                     max="2025"
                     value={formData.year}
                     onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                    placeholder="Adja meg a kiadás évét."
+                    placeholder="Adja meg a kiadás évét!"
                   />
                 </div>
 
@@ -246,7 +246,7 @@ export default function KonyvFeltoltes() {
                     min="0"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    placeholder="Adja meg a kívánt árat."
+                    placeholder="Adja meg a kívánt árat!"
                   />
                 </div>
               </div>
