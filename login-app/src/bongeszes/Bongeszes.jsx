@@ -42,6 +42,10 @@ export default function Bongeszes() {
   };
 
   useEffect(() => {
+    document.title = "SFM Könyvportál";
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
     }, 5000);

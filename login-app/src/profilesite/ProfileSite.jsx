@@ -42,7 +42,7 @@ export default function ProfileSite() {
   const [loadingOffers, setLoadingOffers] = useState(false);
 
   useEffect(() => {
-    document.title = "Profilom • SFM Könyvportál";
+    document.title = "SFM Könyvportál";
   }, []);
 
   useEffect(() => {
