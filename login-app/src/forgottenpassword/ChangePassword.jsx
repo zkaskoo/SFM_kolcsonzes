@@ -26,6 +26,9 @@ export default function ChangePassword() {
 
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
 
+  useEffect(() => {
+  document.title = "SFM Könyvportál";
+  }, []);
   // HÁTTÉRKÉP VÁLTÁS – 5 mp-enként
   useEffect(() => {
     const interval = setInterval(() => {

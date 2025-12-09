@@ -25,6 +25,10 @@ export default function AddBalance() {
   const images = [kep1, kep2, kep3, kep4];
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  useEffect(() => {
+  document.title = "SFM Könyvportál";
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % images.length);

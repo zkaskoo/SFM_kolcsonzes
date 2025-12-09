@@ -42,6 +42,9 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  useEffect(() => {
+  document.title = "SFM Könyvportál";
+  }, []);
   // HÁTTÉRKÉP VÁLTÁS – 5 MÁSODPERCENKÉNT
   useEffect(() => {
     const interval = setInterval(() => {

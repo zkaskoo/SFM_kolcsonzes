@@ -34,6 +34,9 @@ export default function MainSite() {
     "Modern, gyors, biztonságos."
   ];
 
+  useEffect(() => {
+  document.title = "SFM Könyvportál";
+  }, []);
   // Háttérképek váltása MINDIG (bejelentkezve is)
   useEffect(() => {
     const interval = setInterval(() => {

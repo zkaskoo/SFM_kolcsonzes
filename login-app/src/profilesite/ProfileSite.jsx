@@ -37,6 +37,10 @@ export default function ProfileSite() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
+  document.title = "SFM Könyvportál";
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
     }, 5000);

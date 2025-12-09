@@ -21,6 +21,10 @@ export default function ForgottenPasswordEmailCheck() {
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
 
   useEffect(() => {
+  document.title = "SFM Könyvportál";
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBgIndex((prev) => (prev + 1) % backgrounds.length);
     }, 5000);
