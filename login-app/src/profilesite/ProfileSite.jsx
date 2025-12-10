@@ -44,7 +44,7 @@ export default function ProfileSite() {
   const [declineOfferId, setDeclineOfferId] = useState(null);
 
   useEffect(() => {
-    document.title = "Profilom • SFM Könyvportál";
+    document.title = "SFM Könyvportál";
   }, []);
 
   useEffect(() => {
