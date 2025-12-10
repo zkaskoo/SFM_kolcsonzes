@@ -1,8 +1,11 @@
 package com.example.demo.password;
 
+import org.springframework.stereotype.Service;
+
 import java.security.SecureRandom;
 import java.util.Random;
 
+@Service
 public class AutomaticPasswordGeneration {
 
     private static final String UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

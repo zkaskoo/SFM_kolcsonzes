@@ -1,12 +1,35 @@
-// src/components/ForgottenPasswordEmailCheck.jsx
-import { useState } from 'react';
+// src/components/ForgottenPasswordEmailCheck.jsx – TELJES, HÁTTÉRKÉPEK VÁLTAKOZNAK!
+
+import { useState, useEffect } from 'react';
 import './ForgottenPasswordEmailCheck.css';
+
+// HÁTTÉRKÉPEK – ugyanazok, mint mindenhol
+import bg1 from '../mainsite/fooldalkep1.png';
+import bg2 from '../mainsite/fooldalkep2.png';
+import bg3 from '../mainsite/fooldalkep3.jpg';
+import bg4 from '../mainsite/fooldalkep4.jpg';
+
+const backgrounds = [bg1, bg2, bg3, bg4];
 
 export default function ForgottenPasswordEmailCheck() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');   // csak a backend üzenetei + 1 saját hálózati hiba
+  const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
+
+  // HÁTTÉRKÉP VÁLTÁS – 5 másodpercenként
+  const [currentBgIndex, setCurrentBgIndex] = useState(0);
+
+  useEffect(() => {
+  document.title = "SFM Könyvportál";
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBgIndex((prev) => (prev + 1) % backgrounds.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,13 +44,12 @@ export default function ForgottenPasswordEmailCheck() {
       });
 
       if (res.ok) {
-        setSent(true);                    // backend true-t küld → siker
+        setSent(true);
       } else {
         const err = await res.json().catch(() => ({}));
-        setError(err.message || '');      // csak a backend szövege
+        setError(err.message || 'Hiba történt');
       }
     } catch {
-      // EZ AZ EGYETLEN saját üzenet – csak ha a szerver nem elérhető
       setError('Nem sikerült csatlakozni a szerverhez.');
     } finally {
       setLoading(false);
@@ -35,15 +57,26 @@ export default function ForgottenPasswordEmailCheck() {
   };
 
   return (
-    <div className="app">
-      <div className="login-container">
-        <div className="login-header">
+    <div className="forgotten-app">
+      {/* HÁTTÉRKÉPEK – PONT ÚGY, MINT A FŐOLDALON */}
+      <div className="background-slider">
+        {backgrounds.map((bg, index) => (
+          <div
+            key={index}
+            className={`background-image ${index === currentBgIndex ? 'active' : ''}`}
+            style={{ backgroundImage: `url(${bg})` }}
+          />
+        ))}
+      </div>
+
+      <div className="forgotten-container">
+        <div className="forgotten-header">
           <h1>Jelszó helyreállítása</h1>
           <p>Írja be email címét, és elküldjük önnek a linket</p>
         </div>
 
         {!sent ? (
-          <form onSubmit={handleSubmit} className="login-form">
+          <form onSubmit={handleSubmit} className="forgotten-form">
             <div className="form-group">
               <label>Email címed</label>
               <input
@@ -54,6 +87,7 @@ export default function ForgottenPasswordEmailCheck() {
                 className="form-input"
                 autoFocus
                 disabled={loading}
+                required
               />
             </div>
 
@@ -61,7 +95,7 @@ export default function ForgottenPasswordEmailCheck() {
 
             <button
               type="submit"
-              className="login-btn"
+              className="forgotten-btn"
               disabled={loading}
             >
               {loading ? 'Küldés...' : 'Link küldése'}
@@ -74,7 +108,7 @@ export default function ForgottenPasswordEmailCheck() {
           </div>
         )}
 
-        <div className="login-footer">
+        <div className="forgotten-footer">
           <a href="/login" className="footer-link">
             ← Vissza a bejelentkezéshez
           </a>

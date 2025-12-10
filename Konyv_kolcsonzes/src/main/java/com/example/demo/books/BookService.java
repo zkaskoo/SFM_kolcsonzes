@@ -84,37 +84,6 @@ public class BookService {
         return bookRepository.findAllByUserIdNot(userId);
     }
 
-    public void buyBook(Long id, Long bookId, Long price){
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException("A könyv nem található, ID: " + bookId));
-
-        Long userId = book.getUserId();
-
-
-
-        AppUser appUser = appUserRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("A felahsználó nem található"));
-
-        AppUser appUser2 = appUserRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("A felahsználó nem található"));
-
-        if (appUser.getMoney() < price){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nincs elég pénzed a raktárban!");
-        }
-
-
-        BuyAndChange buyAndChange = new BuyAndChange();
-        buyAndChange.setCustomerAccept(0);
-        buyAndChange.setSellerAccept(1);
-        buyAndChange.setPrice(price);
-        buyAndChange.setCustomerUserId(id);
-        buyAndChange.setCustomerUsername(appUser.getRealUsername());
-        buyAndChange.setSellerUsername(appUser2.getRealUsername());
-        buyAndChange.setPay(true);
-        buyAndChange.setSellerUserId(userId);
-
-        buyAndChangeRepository.save(buyAndChange);
-    }
 
     public void changeBook(Long id, Long requestBookId, Long responseBookId){
         Book book = bookRepository.findById(requestBookId)
@@ -146,6 +115,9 @@ public class BookService {
             predicates.add(cb.notEqual(book.get("userId"), id));
         }
 
+        // Mindig csak publikus (isPrivate = false) könyveket adunk vissza
+        predicates.add(cb.isFalse(book.get("isPrivate")));
+
         // Szűrés cím alapján
         if (title != null && !title.isEmpty()) {
             predicates.add(cb.like(cb.lower(book.get("title")), "%" + title.toLowerCase() + "%"));
@@ -166,6 +138,15 @@ public class BookService {
         return entityManager.createQuery(query).getResultList();
     }
 
+    public void deleteBook(DeleteBookRequest request) {
+        Long id = request.getId();
+
+        if (!bookRepository.existsById(id)) {
+            throw new IllegalArgumentException("Book not found with id: " + id);
+        }
+
+        bookRepository.deleteById(id);
+    }
 
 
 

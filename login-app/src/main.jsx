@@ -12,8 +12,8 @@ import ProfileSite from './profilesite/ProfileSite.jsx';
 import KonyvFeltoltes from './profilesite/konyvfeltoltes/KonyvFeltoltes';
 import Bongeszes from './bongeszes/Bongeszes';
 import UploadMoney from './uploadmoney/uploadMoney.jsx'
-
 import './index.css';
+import './tokenCheck';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -1,6 +1,7 @@
 // src/components/AddBalance.jsx
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Check } from 'lucide-react';
 import "./uploadMoney.css";
 
 import kep1 from '/src/mainsite/fooldalkep1.png';
@@ -23,6 +24,10 @@ export default function AddBalance() {
 
   const images = [kep1, kep2, kep3, kep4];
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+  document.title = "SFM Könyvportál";
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -109,7 +114,7 @@ export default function AddBalance() {
         </div>
         <div className="success-container">
           <div className="success-card">
-            <div className="success-checkmark">Checkmark</div>
+            <div className="success-checkmark"><Check/></div>
             <h2>Sikeres fizetés!</h2>
             <p>{amount.toLocaleString()} Ft került jóváírásra az egyenlegeden.</p>
             <small>Visszairányítás 3 másodperc múlva...</small>

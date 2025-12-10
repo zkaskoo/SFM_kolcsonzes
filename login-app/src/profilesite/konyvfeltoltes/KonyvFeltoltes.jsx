@@ -9,7 +9,6 @@ import {
   Image as ImageIcon,
   BookOpen,
   Calendar,
-  DollarSign,
   FileText
 } from 'lucide-react';
 import './KonyvFeltoltes.css';
@@ -28,6 +27,10 @@ export default function KonyvFeltoltes() {
 
   // HÁTTÉRKÉP VÁLTÁS – 5 másodpercenként
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+  document.title = "SFM Könyvportál";
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -144,7 +147,7 @@ export default function KonyvFeltoltes() {
           />
         ))}
       </div>
-
+      
       {/* VISSZA GOMB */}
       <button onClick={() => navigate('/profile')} className="fixed-back-btn">
         <ArrowLeft size={26} />
@@ -164,7 +167,7 @@ export default function KonyvFeltoltes() {
               ) : (
                 <div className="image-upload-placeholder">
                   <ImageIcon size={48} />
-                  <p>Kattints a borítókép feltöltéséhez</p>
+                  <p>Kattintson a borítókép feltöltéséhez</p>
                 </div>
               )}
             </label>
@@ -180,8 +183,8 @@ export default function KonyvFeltoltes() {
           {/* FEHÉR KONTÉNER */}
           <div className="form-white-container">
             <form onSubmit={handleSubmit} className="konyvfeltoltes-form">
-
               {/* PDF */}
+              {/*
               <div className="pdf-upload-section">
                 <label htmlFor="pdfFile" className="pdf-upload-label">
                   <div className="pdf-upload-content">
@@ -203,7 +206,7 @@ export default function KonyvFeltoltes() {
                   className="pdf-input"
                 />
               </div>
-
+              */}
               {/* ADATOK GRID */}
               <div className="form-grid">
                 <div className="input-group">
@@ -213,7 +216,7 @@ export default function KonyvFeltoltes() {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Adja meg a könyv címét"
+                    placeholder="Adja meg a könyv címét!"
                   />
                 </div>
 
@@ -224,7 +227,7 @@ export default function KonyvFeltoltes() {
                     required
                     value={formData.author}
                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    placeholder="Adja meg a szerző nevét."
+                    placeholder="Adja meg a szerző nevét!"
                   />
                 </div>
 
@@ -236,7 +239,7 @@ export default function KonyvFeltoltes() {
                     max="2025"
                     value={formData.year}
                     onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                    placeholder="Adja meg a kiadás évét."
+                    placeholder="Adja meg a kiadás évét!"
                   />
                 </div>
 
@@ -247,7 +250,7 @@ export default function KonyvFeltoltes() {
                     min="0"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    placeholder="Adja meg a kívánt árat."
+                    placeholder="Adja meg a kívánt árat!"
                   />
                 </div>
               </div>
@@ -269,6 +272,9 @@ export default function KonyvFeltoltes() {
 
         </div>
       </div>
+      <footer className="mainsite-footer">
+        <p>© 2025 GitPush-F • Minden jog fenntartva</p>
+      </footer>
     </div>
   );
 }

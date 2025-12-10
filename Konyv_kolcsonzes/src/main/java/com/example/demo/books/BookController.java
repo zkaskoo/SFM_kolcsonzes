@@ -125,7 +125,7 @@ public class BookController {
         }
     }
 
-    @PostMapping("changepublic")
+    @PostMapping("/changepublic")
     public ResponseEntity<Void> makeBookPublic(@RequestBody ChangeBookRequest request) {
 
         Long bookId = request.getBookId();
@@ -158,17 +158,6 @@ public class BookController {
         return bookService.getAllBooksWithoutOwnBooks(request.getId());
     }
 
-    @PostMapping("/buy")
-    public ResponseEntity<String> buyBook(@RequestBody BuyBookRequest request) {
-        bookService.buyBook(
-                request.getId(),
-                request.getBookId(),
-                request.getPrice()
-        );
-
-        return ResponseEntity.ok("Sikeres vásárlás!");
-    }
-
     @PostMapping("/balance")
     public ResponseEntity<Map<String, Object>> getMoney(@RequestBody UserIdRequest request) {
 
@@ -189,6 +178,10 @@ public class BookController {
                 filterRequest.getAuthor(),
                 filterRequest.getMaximumPrice()
         );
+    }
+    @PostMapping("/delete")
+    public void deleteBook(@RequestBody DeleteBookRequest request) {
+        bookService.deleteBook(request);
     }
 }
 
