@@ -40,6 +40,8 @@ export default function ProfileSite() {
   const [incomingOffers, setIncomingOffers] = useState([]);
   const [outgoingOffers, setOutgoingOffers] = useState([]);
   const [loadingOffers, setLoadingOffers] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [declineOfferId, setDeclineOfferId] = useState(null);
 
   useEffect(() => {
     document.title = "Profilom • SFM Könyvportál";
@@ -137,7 +139,7 @@ export default function ProfileSite() {
         author: book.author || 'Ismeretlen szerző',
         year: book.releaseDate ? new Date(book.releaseDate).getFullYear() : 'N/A',
         price: book.price || 0,
-        coverImage: `http://localhost:8080/api/v1/books/cover/${book.id}`,
+        coverImage: `http://localhost:8080/api/v1/books/cover/${book.id}?t=${Date.now()}`,
         isPublic: !book.private
       }));
 
@@ -155,11 +157,61 @@ export default function ProfileSite() {
     fetchBalance();
   }, [isLoggedIn, token, userId, navigate, activeTab]);
 
+  const handleSellerShip = async (offerId) => {
+    await fetch(`http://localhost:8080/api/v1/trade/ship/seller/${offerId}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    fetchTradeOffers();
+  };
+
+  const handleBuyerShip = async (offerId) => {
+    await fetch(`http://localhost:8080/api/v1/trade/ship/buyer/${offerId}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    fetchTradeOffers();
+  };
+
+  const handleSellerConfirm = async (offerId) => {
+    await fetch(`http://localhost:8080/api/v1/trade/confirm/seller/${offerId}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    fetchTradeOffers();
+  };
+
+  const handleBuyerConfirm = async (offerId) => {
+    await fetch(`http://localhost:8080/api/v1/trade/confirm/buyer/${offerId}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    fetchTradeOffers();
+  };
+
+  const handleSellerAccept = async (offerId) => {
+    await fetch(`http://localhost:8080/api/v1/trade/accept/seller/${offerId}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    fetchTradeOffers(); // frissítés
+  };
+
+
   const handleTopUp = () => {
     const amount = parseInt(topUpAmount);
     if (!amount || amount < 100) { alert("Minimum 100 Ft!"); return; }
     navigate("/upload-money", { state: { amount } });
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (showOffers) fetchTradeOffers();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [showOffers]);
 
   // CSERE AJÁNLATOK LEKÉRÉSE
   const fetchTradeOffers = async () => {
@@ -168,12 +220,8 @@ export default function ProfileSite() {
 
     try {
       const [incRes, outRes] = await Promise.all([
-        fetch('http://localhost:8080/api/v1/trade/incoming', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch('http://localhost:8080/api/v1/trade/outgoing', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
+        fetch(`http://localhost:8080/api/v1/trade/incoming?userId=${userId}`),
+        fetch(`http://localhost:8080/api/v1/trade/outgoing?userId=${userId}`)
       ]);
 
       if (incRes.ok) setIncomingOffers(await incRes.json());
@@ -184,6 +232,24 @@ export default function ProfileSite() {
       setLoadingOffers(false);
     }
   };
+
+  const handleMarkShipped = async (offerId) => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/trade/ship/${offerId}`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error();
+
+      alert("Csomag feladva!");
+      fetchTradeOffers(); // frissítse az ajánlatokat
+
+    } catch {
+      alert("Nem sikerült feladottnak jelölni.");
+    }
+  };
+
 
   const handleAccept = async (offerId) => {
     try {
@@ -204,24 +270,28 @@ export default function ProfileSite() {
   };
 
   const handleDecline = async (offerId) => {
-    if (!confirm("Biztosan elutasítod ezt az ajánlatot?")) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/trade/decline/${offerId}`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        alert("Ajánlat elutasítva");
-        fetchTradeOffers();
-      }
-    } catch {
-      alert("Nem sikerült elutasítani");
+          const res = await fetch(
+              `http://localhost:8080/api/v1/trade/decline/${offerId}?userId=${userId}`,
+              { method: 'POST' }
+          );
+
+          if (res.ok) {
+              fetchTradeOffers();
+          } else {
+              const t = await res.text();
+              alert(t);
+          }
+      } catch {
+          alert("Hiba történt az elutasítás során.");
     }
-  };
+};
+
+
 
   const openOffers = () => {
-    setShowOffers(true);
     fetchTradeOffers();
+    setShowOffers(true);
   };
 
   return (
@@ -381,27 +451,184 @@ export default function ProfileSite() {
                       <small><Calendar size={14} /> {offer.date}</small>
                     </div>
 
-                    <div className="offer-books">
-                      <p>
-                        <strong>{offer.bookOffered}</strong> → <strong>{offer.bookRequested}</strong>
-                      </p>
-                    </div>
+                      {offerTab === "incoming" && (
+                      <>
 
-                    {offerTab === 'incoming' && offer.status === 'pending' ? (
-                      <div className="offer-actions">
-                        <button onClick={() => handleAccept(offer.id)} className="accept-btn">
-                          Elfogadás
-                        </button>
-                        <button onClick={() => handleDecline(offer.id)} className="decline-btn">
-                          Elutasítás
-                        </button>
-                      </div>
-                    ) : (
-                      <div className={`offer-status offer-status-${offer.status}`}>
-                        {offer.status === 'accepted' ? 'Elfogadva' : 
-                         offer.status === 'declined' ? 'Elutasítva' : 'Függőben'}
-                      </div>
+                        {/* ======== FIZETÉS ======== */}
+                        {offer.pay === true && (
+                          <>
+
+                            {/* 1. Seller még nem postázott */}
+                            {!offer.sellerShipped && (
+                              <button
+                                onClick={() => handleSellerShip(offer.id)}
+                                className="accept-btn"
+                              >
+                                Csomag feladása
+                              </button>
+                            )}
+
+                            {/* 2. Seller postázott, buyer még nem igazolt */}
+                            {offer.sellerShipped && !offer.buyerConfirmed && (
+                              <div className="offer-status offer-status-pending">
+                                Ön feladta a csomagot. Várakozás a vevő visszaigazolására.
+                              </div>
+                            )}
+
+                            {/* 3. Buyer visszaigazolta → kész */}
+                            {offer.buyerConfirmed && (
+                              <div className="offer-status offer-status-complete">
+                                A vevő visszaigazolta az átvételt. A fizetés megtörtént.
+                              </div>
+                            )}
+
+                          </>
+                        )}
+
+                        {/* ======== CSERE ======== */}
+                        {offer.pay === false && (
+                          <>
+
+                            {/* 1. Seller még nem postázott */}
+                            {offer.sellerAccept === true && offer.sellerShipped === false && (
+                              <button
+                                onClick={() => handleSellerShip(offer.id)}
+                                className="accept-btn"
+                              >
+                                Csomag feladása
+                              </button>
+                            )}
+
+                            {offerTab === "incoming" && offer.pay === false && offer.sellerAccept === false && (
+                              <button
+                                onClick={() => handleSellerAccept(offer.id)}
+                                className="accept-btn"
+                              >
+                                Elfogadás
+                              </button>
+                            )}
+
+
+                            {offerTab === "incoming" && offer.pay === false && offer.sellerAccept == false && (
+                              <button
+                                  onClick={() => handleDecline(offer.id)}
+                                  className="decline-btn"
+                              >
+                                  Elutasítás
+                              </button>
+                            )}
+
+
+                            {/* 2. Seller postázott, buyer még nem */}
+                            {offer.sellerShipped && !offer.buyerShipped && (
+                              <div className="offer-status offer-status-pending">
+                                Ön feladta a csomagot. Várakozás a vevőre.
+                              </div>
+                            )}
+
+                            {/* 3. Mindketten postáztak → sellernek vissza kell igazolnia */}
+                            {offer.sellerShipped && offer.buyerShipped && !offer.sellerConfirmed && (
+                              <button
+                                onClick={() => handleSellerConfirm(offer.id)}
+                                className="accept-btn"
+                              >
+                                Kézbesítés visszaigazolása
+                              </button>
+                            )}
+
+                            {/* 4. Seller visszaigazolta */}
+                            {offer.sellerConfirmed && (
+                              <div className="offer-status offer-status-pending">
+                                Ön visszaigazolta a kézbesítést.
+                              </div>
+                            )}
+
+                          </>
+                        )}
+
+                      </>
                     )}
+
+                    {offerTab === "outgoing" && (
+                    <>
+
+                      {/* ======== FIZETÉS ======== */}
+                      {offer.pay === true && (
+                        <>
+
+                          {/* 1. Seller még nem postázott */}
+                          {!offer.sellerShipped && (
+                            <div className="offer-status offer-status-pending">
+                              Az eladó még nem postázta a csomagot.
+                            </div>
+                          )}
+
+                          {/* 2. Seller postázott → buyer visszaigazol */}
+                          {offer.sellerShipped && !offer.buyerConfirmed && (
+                            <button
+                              onClick={() => handleBuyerConfirm(offer.id)}
+                              className="accept-btn"
+                            >
+                              Megérkezett
+                            </button>
+                          )}
+
+                          {/* 3. Buyer visszaigazolta */}
+                          {offer.buyerConfirmed && (
+                            <div className="offer-status offer-status-complete">
+                              A csomag átvétele sikeresen visszaigazolva.
+                            </div>
+                          )}
+
+                        </>
+                      )}
+
+                      {/* ======== CSERE ======== */}
+                      {offer.pay === false && (
+                        <>
+
+                          {/* 1. buyer még nem postázott */}
+                          {offer.sellerAccept === true && offer.buyerShipped === false && (
+                            <button
+                              onClick={() => handleBuyerShip(offer.id)}
+                              className="accept-btn"
+                            >
+                              Csomag feladása
+                            </button>
+                          )}
+
+                          {/* 2. buyer postázott, seller még nem */}
+                          {offer.buyerShipped && !offer.sellerShipped && (
+                            <div className="offer-status offer-status-pending">
+                              Ön feladta a csomagot. Várakozás az eladóra.
+                            </div>
+                          )}
+
+                          {/* 3. mindketten postáztak → buyer visszaigazol */}
+                          {offer.buyerShipped && offer.sellerShipped && !offer.buyerConfirmed && (
+                            <button
+                              onClick={() => handleBuyerConfirm(offer.id)}
+                              className="accept-btn"
+                            >
+                              Megérkezett
+                            </button>
+                          )}
+
+                          {/* 4. buyer visszaigazolta */}
+                          {offer.buyerConfirmed && (
+                            <div className="offer-status offer-status-pending">
+                              Ön visszaigazolta a kézbesítést.
+                            </div>
+                          )}
+
+                        </>
+                      )}
+
+                    </>
+                  )}
+
+
+
                   </div>
                 ))
               )}
@@ -409,6 +636,36 @@ export default function ProfileSite() {
           </div>
         )}
       </div>
+
+      {showDeclineModal && (
+        <div className="modal-overlay" onClick={() => setShowDeclineModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+
+            <h2>Biztosan elutasítod?</h2>
+            <p>Ha elutasítod, az ajánlat végleg törlődik.</p>
+
+            <div className="modal-actions">
+              <button 
+                className="modal-cancel"
+                onClick={() => setShowDeclineModal(false)}
+              >
+                Mégse
+              </button>
+
+              <button 
+                className="modal-confirm"
+                onClick={() => {
+                  handleDecline(declineOfferId);
+                  setShowDeclineModal(false);
+                }}
+              >
+                Igen, töröld
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       <footer className="mainsite-footer">
         <p>© 2025 GitPush-F • Minden jog fenntartva</p>

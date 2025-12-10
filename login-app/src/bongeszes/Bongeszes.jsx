@@ -35,11 +35,107 @@ export default function Bongeszes() {
   const [myBooks, setMyBooks] = useState([]);
   const [loadingMyBooks, setLoadingMyBooks] = useState(false);
 
+  const [selectedOfferId, setSelectedOfferId] = useState(null);
+
+  const startTradeOffer = async (bookId) => {
+    try {
+      const res = await fetch("http://localhost:8080/api/v1/trade/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          bookId: bookId,
+          userId: parseInt(userId)
+        })
+      });
+
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+
+      // Mentjük a state-be
+      setSelectedOfferId(data.offerId);
+
+      // És VISSZA is adjuk!
+      return data.offerId;
+
+    } catch (err) {
+      alert("Nem sikerült csereajánlatot létrehozni!");
+      return null; // FONTOS-HALÁLOS FIX!!!
+    }
+  };
+
+
+
+
   const handleLogout = () => {
     localStorage.clear();
     navigate('/');
     window.location.reload();
   };
+
+  const handleBuy = async (book) => {
+    console.log("BUY CLICKED", book.id, userId);
+  if (!userId) {
+    alert("Be kell jelentkezned a vásárláshoz!");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:8080/api/v1/buy", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        userId: parseInt(userId),
+        bookId: book.id,
+        price: book.price
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error("A vásárlás sikertelen volt");
+    }
+
+    alert("A vásárlás sikeresen megtörtént!");
+  } catch (err) {
+    console.error("Vásárlás hiba:", err);
+    alert("Hiba történt a vásárlás során!");
+  }
+};
+
+  const handleSelectTradeBook = async (myBookId) => {
+    try {
+      const response = await fetch("http://localhost:8080/api/v1/trade/select", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          offerId: selectedOfferId,         // EZ A FONTOS!!!
+          customerTradeBookId: myBookId,
+          userId: parseInt(userId)
+        })
+      });
+
+      if (!response.ok) throw new Error();
+
+      alert("Csereajánlat mentve!");
+      setShowTradeModal(false);
+
+    } catch {
+      alert("Hiba történt a csereajánlat mentésekor.");
+    }
+  };
+
+
+
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -114,7 +210,7 @@ export default function Bongeszes() {
         author: book.author || 'Ismeretlen szerző',
         picture: book.picture && book.picture.startsWith('data:')
           ? book.picture
-          : `http://localhost:8080/api/v1/books/cover/${book.id}`,
+          : `http://localhost:8080/api/v1/books/cover/${book.id}?t=${Date.now()}`,
         price: book.price,
         releaseDate: book.releaseDate
       }));
@@ -286,7 +382,7 @@ export default function Bongeszes() {
                       <div className="book-cover">
                         {book.picture ? (
                           <img 
-                            src={book.picture.startsWith('data:') ? book.picture : `http://localhost:8080/api/v1/books/cover/${book.id}`}
+                            src={book.picture.startsWith('data:') ? book.picture : `http://localhost:8080/api/v1/books/cover/${book.id}?t=${Date.now()}`}
                             alt={book.title}
                             onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book.jpg'; }}
                           />
@@ -308,12 +404,15 @@ export default function Bongeszes() {
                       <div className="book-actions">
                         <button 
                           className="trade-btn"
-                          onClick={() => {
+                          onClick={async () => {
+                            const offerId = await startTradeOffer(book.id);
+                            if (!offerId) return;
+
                             setSelectedBookForTrade({
                               ...book,
                               picture: book.picture && book.picture.startsWith('data:')
                                 ? book.picture
-                                : `http://localhost:8080/api/v1/books/cover/${book.id}`
+                                : `http://localhost:8080/api/v1/books/cover/${book.id}?t=${Date.now()}`
                             });
                             loadMyBooksForTrade();
                             setShowTradeModal(true);
@@ -321,7 +420,11 @@ export default function Bongeszes() {
                         >
                           Csereajánlat küldése
                         </button>
-                        <button className="buy-btn">
+
+                        <button 
+                          className="buy-btn"
+                          onClick={() => handleBuy(book)}
+                        >
                           Vásárlás
                         </button>
                       </div>
@@ -389,9 +492,14 @@ export default function Bongeszes() {
 
                     {/* KIVÁLASZT GOMB – FÜGGŐLEGESEN KÖZÉPEN, SZÉPEN! */}
                     <div className="book-actions my-book-actions-centered">
-                      <button className="trade-btn">
+                      <button 
+                        className="trade-btn"
+                        onClick={() => handleSelectTradeBook(myBook.id)}
+                      >
                         Kiválaszt
                       </button>
+
+
                     </div>
                   </div>
                 ))
