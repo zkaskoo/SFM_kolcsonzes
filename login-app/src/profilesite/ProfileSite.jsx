@@ -137,7 +137,7 @@ export default function ProfileSite() {
         author: book.author || 'Ismeretlen szerző',
         year: book.releaseDate ? new Date(book.releaseDate).getFullYear() : 'N/A',
         price: book.price || 0,
-        coverImage: `http://localhost:8080/api/v1/books/cover/${book.id}`,
+        coverImage: `http://localhost:8080/api/v1/books/cover/${book.id}?t=${Date.now()}`,
         isPublic: !book.private
       }));
 

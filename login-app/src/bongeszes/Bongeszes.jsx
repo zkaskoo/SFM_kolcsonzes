@@ -118,7 +118,7 @@ export default function Bongeszes() {
         author: book.author || 'Ismeretlen szerző',
         picture: book.picture && book.picture.startsWith('data:')
           ? book.picture
-          : `http://localhost:8080/api/v1/books/cover/${book.id}`,
+          : `http://localhost:8080/api/v1/books/cover/${book.id}?t=${Date.now()}`,
         price: book.price,
         releaseDate: book.releaseDate
       }));
@@ -290,7 +290,7 @@ export default function Bongeszes() {
                       <div className="book-cover">
                         {book.picture ? (
                           <img 
-                            src={book.picture.startsWith('data:') ? book.picture : `http://localhost:8080/api/v1/books/cover/${book.id}`}
+                            src={book.picture.startsWith('data:') ? book.picture : `http://localhost:8080/api/v1/books/cover/${book.id}?t=${Date.now()}`}
                             alt={book.title}
                             onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book.jpg'; }}
                           />
@@ -317,7 +317,7 @@ export default function Bongeszes() {
                               ...book,
                               picture: book.picture && book.picture.startsWith('data:')
                                 ? book.picture
-                                : `http://localhost:8080/api/v1/books/cover/${book.id}`
+                                : `http://localhost:8080/api/v1/books/cover/${book.id}?t=${Date.now()}`
                             });
                             loadMyBooksForTrade();
                             setShowTradeModal(true);
