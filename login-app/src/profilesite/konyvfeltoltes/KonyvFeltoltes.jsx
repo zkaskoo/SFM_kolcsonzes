@@ -183,8 +183,8 @@ export default function KonyvFeltoltes() {
           {/* FEHÉR KONTÉNER */}
           <div className="form-white-container">
             <form onSubmit={handleSubmit} className="konyvfeltoltes-form">
-
               {/* PDF */}
+              {/*
               <div className="pdf-upload-section">
                 <label htmlFor="pdfFile" className="pdf-upload-label">
                   <div className="pdf-upload-content">
@@ -206,7 +206,7 @@ export default function KonyvFeltoltes() {
                   className="pdf-input"
                 />
               </div>
-
+              */}
               {/* ADATOK GRID */}
               <div className="form-grid">
                 <div className="input-group">

@@ -448,7 +448,7 @@ export default function ProfileSite() {
                         <User size={18} />
                         <strong>{offer.from}</strong>
                       </div>
-                      <small><Calendar size={14} /> {offer.date}</small>
+                      <small>{offer.date}</small>
                     </div>
 
                       {offerTab === "incoming" && (
